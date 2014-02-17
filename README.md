@@ -1,7 +1,8 @@
-djco
-====
+# djco
 
-## Useful links
+
+
+## Related Resources
 
 + [Phaser - Getting Started](http://phaser.io/getting-started-js.php)
 
