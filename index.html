@@ -6,6 +6,10 @@
         <script src="js/phaser.min.js"></script>
 
         <style>
+            body {
+                background-color: black;
+            }
+
             canvas {
                 margin: 0 auto;
             }
@@ -20,11 +24,14 @@
         var game = new Phaser.Game(600, 900, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update });
 
         var player;
+        var aliens;
         var bullets;
         var bulletTime = 0;
         var cursors;
         var fireButton;
         var starfield;
+        var enemyBullet;
+        var livingEnemies = [];
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
 
@@ -33,6 +40,7 @@
             game.load.image('starfield', 'assets/starfield.png');
             game.load.image('ship', 'assets/player.png');
             game.load.image('bullet', 'assets/bullet.png');
+            game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
 
         }
 
@@ -42,7 +50,7 @@
             starfield = game.add.tileSprite(0, 0, 600, 900, 'starfield');
 
             //  The hero!
-            player = game.add.sprite(400, 500, 'ship');
+            player = game.add.sprite(300, 500, 'ship');
             player.anchor.setTo(0.5, 0.5);
 
             //  Our bullet group
@@ -50,6 +58,10 @@
             bullets.createMultiple(100, 'bullet');
             bullets.setAll('anchor.x', 0.5);
             bullets.setAll('anchor.y', 1);
+
+            //  The enemies
+            aliens = game.add.group();
+            createAliens();
 
             //  Controls to play the game
             cursors = game.input.keyboard.createCursorKeys();
@@ -83,16 +95,43 @@
             } else if (cursors.up.isDown) {
                 player.body.velocity.y = -200;
             } else if (cursors.down.isDown) {
-                player.body.velocity.y = 200;
+                if (player.y < 640) {
+                    player.body.velocity.y = 200;
+                }
             }
 
             // Check if is firing
             if (fireButton.isDown) {
                 fireBullet();
             }
+
+            //  Check if hero has moved to the other side
+            //  TODO needs to be improved
+            if (player.x < 0) {
+                player.x = 600;
+            } else if (player.x > 600) {
+                player.x = 0;
+            }
         }
 
         //  Custom functions
+
+        function createAliens () {
+            for (var y = 0; y < 4; y++) {
+                for (var x = 0; x < 10; x++) {
+                    var alien = aliens.create(x * 48, y * 50, 'invader');
+                    alien.anchor.setTo(0.5, 0.5);
+                    alien.animations.add('fly', [0, 1, 2, 3], 20, true);
+                    alien.play('fly');
+                }
+            }
+
+            aliens.x = 40;
+            aliens.y = 700;
+
+            var tween = game.add.tween(aliens).to( {x: 120}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
+            tween.onComplete.add(function () { aliens.y += 10; }, this);
+        }
 
         function fireBullet () {
 
