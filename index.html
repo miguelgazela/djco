@@ -21,13 +21,12 @@
 
     window.onload = function() {
 
-        var game = new Phaser.Game(600, 900, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update });
-
         var player;
         var aliens;
         var bullets;
         var bulletTime = 0;
         var cursors;
+        var explosions;
         var fireButton;
         var starfield;
         var enemyBullet;
@@ -35,33 +34,47 @@
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
 
+        var CANVAS_WIDTH = 600;
+        var CANVAS_HEIGHT = 800;
+        var PLAYER_SHIP_WIDTH = 28;
+        var BOTTOM_LIMIT = 550;
+
+        var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update });
+
         function preload () {
 
             game.load.image('starfield', 'assets/starfield.png');
-            game.load.image('ship', 'assets/player.png');
+            game.load.image('ship', 'assets/player_.png');
             game.load.image('bullet', 'assets/bullet.png');
             game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
+            game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
 
         }
 
         function create () {
 
             //  The scrolling starfield background
-            starfield = game.add.tileSprite(0, 0, 600, 900, 'starfield');
+            starfield = game.add.tileSprite(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 'starfield');
 
             //  The hero!
-            player = game.add.sprite(300, 500, 'ship');
+            player = game.add.sprite(CANVAS_WIDTH/2, 500, 'ship');
             player.anchor.setTo(0.5, 0.5);
 
             //  Our bullet group
             bullets = game.add.group();
-            bullets.createMultiple(100, 'bullet');
+            bullets.createMultiple(30, 'bullet');
             bullets.setAll('anchor.x', 0.5);
             bullets.setAll('anchor.y', 1);
+            bullets.setAll('outOfBoundsKill', true);
 
             //  The enemies
             aliens = game.add.group();
             createAliens();
+
+            //  Explosion pool
+            explosions = game.add.group();
+            explosions.createMultiple(30, 'explosion');
+            explosions.forEach(setupInvader, this);
 
             //  Controls to play the game
             cursors = game.input.keyboard.createCursorKeys();
@@ -83,19 +96,23 @@
                 if (cursors.up.isDown) {
                     player.body.velocity.y = -200;
                 } else if (cursors.down.isDown) {
-                    player.body.velocity.y = 200;
+                    if (player.y < BOTTOM_LIMIT) {
+                        player.body.velocity.y = 200;
+                    }
                 }
             } else if (cursors.right.isDown) {
                 player.body.velocity.x = 200;
                 if (cursors.up.isDown) {
                     player.body.velocity.y = -200;
                 } else if (cursors.down.isDown) {
-                    player.body.velocity.y = 200;
+                    if (player.y < BOTTOM_LIMIT) {
+                        player.body.velocity.y = 200;
+                    }
                 }
             } else if (cursors.up.isDown) {
                 player.body.velocity.y = -200;
             } else if (cursors.down.isDown) {
-                if (player.y < 640) {
+                if (player.y < BOTTOM_LIMIT) {
                     player.body.velocity.y = 200;
                 }
             }
@@ -106,17 +123,42 @@
             }
 
             //  Check if hero has moved to the other side
-            //  TODO needs to be improved
-            if (player.x < 0) {
-                player.x = 600;
-            } else if (player.x > 600) {
-                player.x = 0;
+            if ((player.x + PLAYER_SHIP_WIDTH / 2) < 0) {
+                player.x = CANVAS_WIDTH + (PLAYER_SHIP_WIDTH / 2) - 2;  //  -2 just to see the tip of the wing
+            }  
+            else if ((player.x - PLAYER_SHIP_WIDTH / 2) > CANVAS_WIDTH) {
+                player.x = 0 - (PLAYER_SHIP_WIDTH / 2) + 2;  //  + 2 just to see the tip of the wing
             }
+
+            //  Check collisions
+            game.physics.overlap(bullets, aliens, collisionHandler, null, this);
         }
 
         //  Custom functions
 
+        function collisionHandler (bullet, alien) {
+
+            //  kill both objects
+            bullet.kill();
+            alien.kill();
+
+            //  create an explosion
+            var explosion = explosions.getFirstDead();
+            explosion.reset(alien.body.x, alien.body.y);
+            explosion.play('explosion', 30, false, true);
+
+        }
+
+        function setupInvader (invader) {
+
+            invader.anchor.x = 0.5;
+            invader.anchor.y = 0.5;
+            invader.animations.add('explosion');
+
+        }
+
         function createAliens () {
+
             for (var y = 0; y < 4; y++) {
                 for (var x = 0; x < 10; x++) {
                     var alien = aliens.create(x * 48, y * 50, 'invader');
@@ -127,10 +169,11 @@
             }
 
             aliens.x = 40;
-            aliens.y = 700;
+            aliens.y = 600;
 
             var tween = game.add.tween(aliens).to( {x: 120}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
             tween.onComplete.add(function () { aliens.y += 10; }, this);
+
         }
 
         function fireBullet () {
