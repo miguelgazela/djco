@@ -164,7 +164,7 @@ function collisionHandler (bullet, alien) {
 
     //  When a bullet hits an alien we kill them both
     bullet.kill();
-    alien.kill();
+    // alien.kill();
 
     //  Increase the score
     score += 20;
