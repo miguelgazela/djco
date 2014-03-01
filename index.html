@@ -3,11 +3,13 @@
     <head>
         <meta charset="UTF-8" />
         <title>Space Invaders</title>
-        <script src="js/phaser.min.js"></script>
 
         <style>
+            html,
             body {
+                height: 100%;
                 background-color: black;
+                margin: 0;
             }
 
             canvas {
@@ -17,11 +19,14 @@
     </head>
     <body>
 
+    <script src="js/phaser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script type="text/javascript">
 
     window.onload = function() {
 
         var player;
+        var playerHealth = 100;
 
         // groups
         var aliens;
@@ -46,12 +51,13 @@
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
 
+        var WINDOW_HEIGHT = $(window).height();
         var CANVAS_WIDTH = 600;
-        var CANVAS_HEIGHT = 800;
+        var CANVAS_HEIGHT = WINDOW_HEIGHT;
         var PLAYER_SHIP_WIDTH = 28;
-        var BOTTOM_LIMIT = 550;
+        var BOTTOM_LIMIT = WINDOW_HEIGHT - 260;
 
-        var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update });
+        var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
         function preload () {
 
@@ -165,7 +171,7 @@
             }
 
             if (game.time.now > firingTimer) {
-                enemyFires();
+                // enemyFires();
             }
 
             //  Check if hero has moved to the other side
@@ -180,6 +186,13 @@
             game.physics.overlap(bullets, aliens, collisionHandler, null, this);
             game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
             game.physics.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
+
+        }
+
+        function render () {
+
+           
+
         }
 
         // ------------------------------------------------------------------------------------------------
@@ -266,10 +279,10 @@
             }
 
             aliens.x = 40;
-            aliens.y = 600;
+            aliens.y = CANVAS_HEIGHT - 200;
 
-            var tween = game.add.tween(aliens).to( {x: 120}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
-            tween.onComplete.add(function () { aliens.y += 10; }, this);
+            var tween = game.add.tween(aliens).to( {x: 130}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
+            // tween.onComplete.add(function () { aliens.y += 10; }, this);
 
         }
 
