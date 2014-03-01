@@ -22,17 +22,27 @@
     window.onload = function() {
 
         var player;
+
+        // groups
         var aliens;
         var bullets;
+        var explosions;
+        var mines;
+        var meteors;
+        var enemyBullets;
+        var livingEnemies = [];
+
+        // time related vars
         var bulletTime = 0;
         var mineTime = 0;
         var firingTimer = 0;
+
+        // control keys
         var cursors;
-        var explosions;
         var fireButton;
+        var dropButton;
+
         var starfield;
-        var enemyBullet;
-        var livingEnemies = [];
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
 
@@ -52,6 +62,7 @@
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
             game.load.image('mine', 'assets/mine.png');
             game.load.image('enemyBullet', 'assets/enemy-bullet.png');
+            // game.load.image('smallMeteor' 'assets/meteor-small.png');
 
         }
 
@@ -84,6 +95,13 @@
             mines.setAll('anchor.x', 0.5);
             mines.setAll('anchor.y', 1);
             mines.setAll('outOfBoundsKill', true);
+
+            //  group of meteors
+            meteors = game.add.group();
+            meteors.createMultiple(30, 'smallMeteor');
+            meteors.setAll('anchor.x', 0.5);
+            meteors.setAll('anchor.y', 1);
+            meteors.setAll('outOfBoundsKill', true);
 
             //  The enemies
             aliens = game.add.group();
@@ -164,7 +182,13 @@
             game.physics.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
         }
 
-        //  Custom functions
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+        //  
+        //                                          Custom functions
+        // 
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
 
         function collisionHandler (bullet, alien) {
 
