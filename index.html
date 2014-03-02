@@ -48,6 +48,10 @@
         var fireButton;
         var dropButton;
 
+        // sounds
+        var s_laser;
+        var s_explosion;
+
         var starfield;
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
@@ -70,6 +74,9 @@
             game.load.image('mine', 'assets/mine.png');
             game.load.image('enemyBullet', 'assets/enemy-bullet.png');
             game.load.image('smallMeteor', 'assets/meteor-small.png');
+
+            game.load.audio('s_laser', 'assets/audio/laser.wav');
+            game.load.audio('s_explosion', 'assets/audio/explode.wav');
 
         }
 
@@ -123,6 +130,10 @@
             cursors = game.input.keyboard.createCursorKeys();
             fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             dropButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+
+            // sounds
+            s_laser = game.add.audio('s_laser');
+            s_explosion = game.add.audio('s_explosion');
 
         }
 
@@ -192,7 +203,8 @@
             game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
             game.physics.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
             game.physics.overlap(meteors, player, meteorHitsPlayer, null, this);
-            game.physics.overlap(bullets, meteors, playerHitsMeteor, null, this);
+            game.physics.overlap(bullets, meteors, bulletHitsMeteor, null, this);
+            game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
 
         }
 
@@ -242,17 +254,21 @@
 
             var randomX = game.rnd.integerInRange(22, 578);
             meteor = meteors.getFirstExists(false);
-            meteor.reset(randomX, -21);
-            meteor.body.velocity.y = 100;
-            meteorTimer = game.time.now + 4000;
+
+            if (meteor) {
+                meteor.reset(randomX, -21);
+                meteor.body.velocity.y = 100;
+                meteor.body.angularVelocity = 20;
+                meteorTimer = game.time.now + 300;
+            }
 
         }
 
-        function playerHitsMeteor (bullet, meteor) {
+        function bulletHitsMeteor (bullet, meteor) {
 
             bullet.kill();
             meteor.kill();
-            createExplosion(meteor.body.x, meteor.body.y);
+            createExplosion(bullet.body.x, bullet.body.y);
 
         }
 
@@ -317,6 +333,7 @@
                     bullet.reset(player.x, player.y + 8);
                     bullet.body.velocity.y = -400;
                     bulletTime = game.time.now + 200;
+                    s_laser.play();
                 }
             }
 
@@ -329,7 +346,7 @@
 
                 if (mine) {
                     mine.reset(player.x, player.y + 12);
-                    mine.body.velocity.y = 200;
+                    mine.body.velocity.y = 100;
                     mineTime = game.time.now + 400;
                 }
             }
@@ -339,6 +356,7 @@
         function createExplosion(x, y) {
 
             // create an explosion
+            s_explosion.play();
             var explosion = explosions.getFirstDead();
             explosion.reset(x, y);
             explosion.play('explosion', 30, false, true);
