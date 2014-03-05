@@ -41,11 +41,16 @@
         var bulletTime = 0;
         var mineTime = 0;
         var firingTimer = 0;
+        var meteorTimer = 0;
 
         // control keys
         var cursors;
         var fireButton;
         var dropButton;
+
+        // sounds
+        var s_laser;
+        var s_explosion;
 
         var starfield;
         var backgroundScrollSpeed = 2;
@@ -55,7 +60,6 @@
         var CANVAS_WIDTH = 600;
         var CANVAS_HEIGHT = WINDOW_HEIGHT;
         var PLAYER_SHIP_WIDTH = 28;
-        var BOTTOM_LIMIT = WINDOW_HEIGHT - 260;
 
         var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
@@ -68,7 +72,10 @@
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
             game.load.image('mine', 'assets/mine.png');
             game.load.image('enemyBullet', 'assets/enemy-bullet.png');
-            // game.load.image('smallMeteor' 'assets/meteor-small.png');
+            game.load.image('smallMeteor', 'assets/meteor-small.png');
+
+            game.load.audio('s_laser', 'assets/audio/laser.wav');
+            game.load.audio('s_explosion', 'assets/audio/explode.wav');
 
         }
 
@@ -78,7 +85,7 @@
             starfield = game.add.tileSprite(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 'starfield');
 
             //  The hero!
-            player = game.add.sprite(CANVAS_WIDTH/2, 500, 'ship');
+            player = game.add.sprite(CANVAS_WIDTH/2, 550, 'ship');
             player.anchor.setTo(0.5, 0.5);
 
             //  Our bullet group
@@ -123,6 +130,10 @@
             fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             dropButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
 
+            // sounds
+            s_laser = game.add.audio('s_laser');
+            s_explosion = game.add.audio('s_explosion');
+
         }
 
         function update () {
@@ -136,28 +147,8 @@
 
             if (cursors.left.isDown) {
                 player.body.velocity.x = -200;
-                if (cursors.up.isDown) {
-                    player.body.velocity.y = -200;
-                } else if (cursors.down.isDown) {
-                    if (player.y < BOTTOM_LIMIT) {
-                        player.body.velocity.y = 200;
-                    }
-                }
             } else if (cursors.right.isDown) {
                 player.body.velocity.x = 200;
-                if (cursors.up.isDown) {
-                    player.body.velocity.y = -200;
-                } else if (cursors.down.isDown) {
-                    if (player.y < BOTTOM_LIMIT) {
-                        player.body.velocity.y = 200;
-                    }
-                }
-            } else if (cursors.up.isDown) {
-                player.body.velocity.y = -200;
-            } else if (cursors.down.isDown) {
-                if (player.y < BOTTOM_LIMIT) {
-                    player.body.velocity.y = 200;
-                }
             }
 
             // Check if is firing
@@ -171,7 +162,11 @@
             }
 
             if (game.time.now > firingTimer) {
-                // enemyFires();
+                enemyFires();
+            }
+
+            if (game.time.now > meteorTimer) {
+                sendMeteor();
             }
 
             //  Check if hero has moved to the other side
@@ -186,12 +181,14 @@
             game.physics.overlap(bullets, aliens, collisionHandler, null, this);
             game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
             game.physics.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
+            game.physics.overlap(meteors, player, meteorHitsPlayer, null, this);
+            game.physics.overlap(bullets, meteors, bulletHitsMeteor, null, this);
+            game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
 
         }
 
         function render () {
 
-           
 
         }
 
@@ -208,11 +205,7 @@
             //  kill both objects
             bullet.kill();
             alien.kill();
-
-            //  create an explosion
-            var explosion = explosions.getFirstDead();
-            explosion.reset(alien.body.x, alien.body.y);
-            explosion.play('explosion', 30, false, true);
+            createExplosion(alien.body.x, alien.body.y);
 
         }
 
@@ -236,26 +229,48 @@
             }
         }
 
-        function playerHitsEnemies (mine, alien) {
+        function sendMeteor () {
 
-            //  kill both objects
-            mine.kill();
-            alien.kill();
+            var randomX = game.rnd.integerInRange(22, 578);
+            meteor = meteors.getFirstExists(false);
 
-            //  create an explosion
-            var explosion = explosions.getFirstDead();
-            explosion.reset(alien.body.x, alien.body.y);
-            explosion.play('explosion', 30, false, true);
+            if (meteor) {
+                meteor.reset(randomX, -21);
+                meteor.body.velocity.y = 100;
+                // meteor.body.angularVelocity = 20;
+                meteor.body.rotation = game.rnd.integerInRange(1, 20);
+                meteorTimer = game.time.now + 300;
+            }
+
         }
 
-        function enemyHitsPlayer (bullet, player) {
+        function bulletHitsMeteor (bullet, meteor) {
 
             bullet.kill();
+            meteor.kill();
+            createExplosion(bullet.body.x, bullet.body.y);
 
-            //  And create an explosion :)
-            var explosion = explosions.getFirstDead();
-            explosion.reset(player.body.x, player.body.y);
-            explosion.play('explosion', 30, false, true);
+        }
+
+        function meteorHitsPlayer (player, meteor) {
+
+            meteor.kill();
+            createExplosion(player.body.x, player.body.y);
+
+        }
+
+        function playerHitsEnemies (mine, alien) {
+
+            mine.kill();
+            alien.kill();
+            createExplosion(alien.body.x, alien.body.y);
+
+        }
+
+        function enemyHitsPlayer (player, bullet) {
+
+            bullet.kill();
+            createExplosion(player.body.x, player.body.y);
 
         }
 
@@ -298,6 +313,7 @@
                     bullet.reset(player.x, player.y + 8);
                     bullet.body.velocity.y = -400;
                     bulletTime = game.time.now + 200;
+                    s_laser.play();
                 }
             }
 
@@ -310,10 +326,20 @@
 
                 if (mine) {
                     mine.reset(player.x, player.y + 12);
-                    mine.body.velocity.y = 200;
+                    mine.body.velocity.y = 100;
                     mineTime = game.time.now + 400;
                 }
             }
+
+        }
+
+        function createExplosion(x, y) {
+
+            // create an explosion
+            s_explosion.play();
+            var explosion = explosions.getFirstDead();
+            explosion.reset(x, y);
+            explosion.play('explosion', 30, false, true);
 
         }
 
