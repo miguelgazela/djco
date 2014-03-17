@@ -15,6 +15,7 @@
             canvas {
                 margin: 0 auto;
             }
+§
         </style>
     </head>
     <body>
@@ -27,6 +28,7 @@
 
         var player;
         var playerHealth = 100;
+        var score = 0;
 
         // groups
         var aliens;
@@ -52,13 +54,17 @@
         var s_laser;
         var s_explosion;
 
+        // texts
+        var scoreText;
+        var healthText;
+
         var starfield;
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
 
         // constants
         var WINDOW_HEIGHT = $(window).height();
-        var CANVAS_WIDTH = 960;
+        var CANVAS_WIDTH = 840;
         var CANVAS_HEIGHT = WINDOW_HEIGHT;
         var PLAYER_SHIP_WIDTH = 28;
         var BOTTOM_LIMIT = WINDOW_HEIGHT - 300;
@@ -131,6 +137,12 @@
             cursors = game.input.keyboard.createCursorKeys();
             fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             dropButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+
+            //  Game info
+            scoreString = 'Score : ';
+            scoreText = game.add.text(10, 10, scoreString + score, { fontSize: '26px', fill: '#e9e9e9' });
+            healthString = "Health: ";
+            healthText = game.add.text(680, 10, healthString + playerHealth, { fontSize: '26px', fill: '#e9e9e9' });
 
             // sounds
             s_laser = game.add.audio('s_laser');
@@ -279,6 +291,11 @@
             meteor.kill();
             createExplosion(player.body.x, player.body.y);
 
+            // decrease player's health
+            playerHealth -= 10;
+            healthText.content = healthString + playerHealth;
+            checkGameOver();
+
         }
 
         function playerHitsEnemies (mine, alien) {
@@ -287,6 +304,10 @@
             alien.kill();
             createExplosion(alien.body.x, alien.body.y);
 
+            //  Increase the score
+            score += 20;
+            scoreText.content = scoreString + score;
+
         }
 
         function enemyHitsPlayer (player, bullet) {
@@ -294,6 +315,10 @@
             bullet.kill();
             createExplosion(player.body.x, player.body.y);
 
+            // decrease player's health
+            playerHealth -= 25;
+            healthText.content = healthString + playerHealth;
+            checkGameOver();
         }
 
         function setupInvader (invader) {
@@ -307,15 +332,15 @@
         function createAliens () {
 
             for (var y = 0; y < 4; y++) {
-                for (var x = 0; x < 10; x++) {
-                    var alien = aliens.create(x * 48, y * 50, 'invader');
+                for (var x = 0; x < 13; x++) {
+                    var alien = aliens.create(x * 64, y * 50, 'invader');
                     alien.anchor.setTo(0.5, 0.5);
                     alien.animations.add('fly', [0, 1, 2, 3], 20, true);
                     alien.play('fly');
                 }
             }
 
-            aliens.x = 40;
+            aliens.x = 60;
             aliens.y = CANVAS_HEIGHT - 200;
 
             var tween = game.add.tween(aliens).to( {x: 130}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
@@ -335,7 +360,7 @@
                     bullet.reset(player.x, player.y + 8);
                     bullet.body.velocity.y = -400;
                     bulletTime = game.time.now + 200;
-                    s_laser.play();
+                    // s_laser.play();
                 }
             }
 
@@ -358,10 +383,16 @@
         function createExplosion(x, y) {
 
             // create an explosion
-            s_explosion.play();
+            // s_explosion.play();
             var explosion = explosions.getFirstDead();
             explosion.reset(x, y);
             explosion.play('explosion', 30, false, true);
+
+        }
+
+        function checkGameOver() {
+
+
 
         }
 
