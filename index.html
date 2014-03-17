@@ -56,10 +56,12 @@
         var backgroundScrollSpeed = 2;
         var speedInc = 0.0005;
 
+        // constants
         var WINDOW_HEIGHT = $(window).height();
-        var CANVAS_WIDTH = 600;
+        var CANVAS_WIDTH = 960;
         var CANVAS_HEIGHT = WINDOW_HEIGHT;
         var PLAYER_SHIP_WIDTH = 28;
+        var BOTTOM_LIMIT = WINDOW_HEIGHT - 300;
 
         var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
@@ -85,7 +87,7 @@
             starfield = game.add.tileSprite(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 'starfield');
 
             //  The hero!
-            player = game.add.sprite(CANVAS_WIDTH/2, 550, 'ship');
+            player = game.add.sprite(CANVAS_WIDTH/2, CANVAS_HEIGHT - 320, 'ship');
             player.anchor.setTo(0.5, 0.5);
 
             //  Our bullet group
@@ -147,8 +149,28 @@
 
             if (cursors.left.isDown) {
                 player.body.velocity.x = -200;
+                if (cursors.up.isDown) {
+                    player.body.velocity.y = -200;
+                } else if (cursors.down.isDown) {
+                    if (player.y < BOTTOM_LIMIT) {
+                        player.body.velocity.y = 200;
+                    }
+                }
             } else if (cursors.right.isDown) {
                 player.body.velocity.x = 200;
+                if (cursors.up.isDown) {
+                    player.body.velocity.y = -200;
+                } else if (cursors.down.isDown) {
+                    if (player.y < BOTTOM_LIMIT) {
+                        player.body.velocity.y = 200;
+                    }
+                }
+            } else if (cursors.up.isDown) {
+                player.body.velocity.y = -200;
+            } else if (cursors.down.isDown) {
+                if (player.y < BOTTOM_LIMIT) {
+                    player.body.velocity.y = 200;
+                }
             }
 
             // Check if is firing
