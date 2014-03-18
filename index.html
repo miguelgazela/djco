@@ -70,6 +70,8 @@
         var CANVAS_HEIGHT = $(window).height();
         var PLAYER_SHIP_WIDTH = 28;
         var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
+        var HEALTH_BAR_X = 802;
+        var HEALTH_BAR_Y = 46;
 
         var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
@@ -155,9 +157,9 @@
             scoreString = 'Score : ';
             scoreText = game.add.text(10, 10, scoreString + score, { fontSize: '26px', fill: '#e9e9e9' });
             healthString = "Health: ";
-            healthText = game.add.text(680, 10, healthString + player.health, { fontSize: '26px', fill: '#e9e9e9' });
+            healthText = game.add.text(800, 10, healthString + player.health, { fontSize: '26px', fill: '#e9e9e9' });
 
-            healthBar = new Phaser.Rectangle(0, 200, 200, 30);
+            healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
 
             // sounds
             s_laser = game.add.audio('s_laser');
@@ -210,9 +212,9 @@
             //     dropMine();
             // }
 
-            // if (game.time.now > firingTimer) {
-            //     enemyFires();
-            // }
+            if (game.time.now > firingTimer) {
+                enemyFires();
+            }
 
             // if (game.time.now > meteorTimer) {
             //     sendMeteor();
@@ -229,7 +231,7 @@
             // //  Check collisions
             // game.physics.overlap(bullets, aliens, collisionHandler, null, this);
             // game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
-            // game.physics.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
+            game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
             // game.physics.overlap(meteors, player, meteorHitsPlayer, null, this);
             // game.physics.overlap(bullets, meteors, bulletHitsMeteor, null, this);
             // game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
@@ -238,7 +240,14 @@
 
         function render () {
 
-            game.debug.geom(healthBar,'#0fffff');
+            var healthBarColor = "#2ecc71";
+            if (player.health < 30) {
+                healthBarColor = "#c0392b";
+            } else if (player.health < 75) {
+                healthBarColor = "#f1c40f";
+            }
+
+            game.debug.geom(healthBar, healthBarColor);
         }
 
         // ------------------------------------------------------------------------------------------------
@@ -309,7 +318,7 @@
 
             // decrease player's health
             playerHealth -= 10;
-            healthText.content = healthString + playerHealth;
+            healthText.text = healthString + playerHealth;
             checkGameOver();
 
         }
@@ -332,8 +341,10 @@
             createExplosion(player.body.x, player.body.y);
 
             // decrease player's health
-            playerHealth -= 25;
-            healthText.content = healthString + playerHealth;
+            player.damage(10);
+            console.log(player.health);
+            healthText.text = healthString + player.health;
+            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - 14.4, healthBar.height);
             checkGameOver();
         }
 
