@@ -8,12 +8,14 @@
             html,
             body {
                 height: 100%;
-                background-color: black;
+                background-color: #030405;
                 margin: 0;
             }
 
             canvas {
                 margin: 0 auto;
+                border-left: 2px solid #010101;
+                border-right: 2px solid #010101;
             }
 §
         </style>
@@ -27,7 +29,6 @@
     window.onload = function() {
 
         var player;
-        var playerHealth = 100;
         var score = 0;
 
         // groups
@@ -65,11 +66,10 @@
         var speedInc = 0.0005;
 
         // constants
-        var WINDOW_HEIGHT = $(window).height();
-        var CANVAS_WIDTH = 840;
-        var CANVAS_HEIGHT = WINDOW_HEIGHT;
+        var CANVAS_WIDTH = 960;
+        var CANVAS_HEIGHT = $(window).height();
         var PLAYER_SHIP_WIDTH = 28;
-        var BOTTOM_LIMIT = WINDOW_HEIGHT - 300;
+        var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
 
         var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
@@ -98,22 +98,25 @@
 
             //  The hero!
             player = game.add.sprite(CANVAS_WIDTH/2, CANVAS_HEIGHT - 320, 'ship');
-            player.anchor.setTo(0.5, 0.5);
             game.physics.enable(player, Phaser.Physics.ARCADE);
+            player.anchor.setTo(0.5, 0.5);
+            player.health = 100;
 
             //  Our bullet group
             bullets = game.add.group();
             bullets.enableBody = true;
             bullets.physicsBodyType = Phaser.Physics.ARCADE;
             bullets.createMultiple(30, 'bullet');
+            bullets.setAll('checkWorldBounds', true);
+            bullets.setAll('outOfBoundsKill', true);
             bullets.setAll('anchor.x', 0.5);
             bullets.setAll('anchor.y', 1);
-            bullets.setAll('outOfBoundsKill', true);
 
             //  The enemy's bullets
             enemyBullets = game.add.group();
-            enemyBullets.createMultiple(30, 'enemyBullet');
+            enemyBullets.enableBody = true;
             enemyBullets.physicsBodyType = Phaser.Physics.ARCADE;
+            enemyBullets.createMultiple(30, 'enemyBullet');
             enemyBullets.setAll('anchor.x', 0.5);
             enemyBullets.setAll('anchor.y', 1);
             enemyBullets.setAll('outOfBoundsKill', true);
@@ -152,7 +155,7 @@
             scoreString = 'Score : ';
             scoreText = game.add.text(10, 10, scoreString + score, { fontSize: '26px', fill: '#e9e9e9' });
             healthString = "Health: ";
-            healthText = game.add.text(680, 10, healthString + playerHealth, { fontSize: '26px', fill: '#e9e9e9' });
+            healthText = game.add.text(680, 10, healthString + player.health, { fontSize: '26px', fill: '#e9e9e9' });
 
             healthBar = new Phaser.Rectangle(0, 200, 200, 30);
 
@@ -216,11 +219,11 @@
             // }
 
             //  Check if hero has moved to the other side
-            if ((player.x + PLAYER_SHIP_WIDTH / 2) < 0) {
-                player.x = CANVAS_WIDTH + (PLAYER_SHIP_WIDTH / 2) - 2;  //  -2 just to see the tip of the wing
+            if ((player.body.x + (PLAYER_SHIP_WIDTH / 2) - 2) < 0) {
+                player.body.x = CANVAS_WIDTH + (PLAYER_SHIP_WIDTH / 2) - 2;  //  -2 just to see the tip of the wing
             }  
-            else if ((player.x - PLAYER_SHIP_WIDTH / 2) > CANVAS_WIDTH) {
-                player.x = 0 - (PLAYER_SHIP_WIDTH / 2) + 2;  //  + 2 just to see the tip of the wing
+            else if ((player.body.x - (PLAYER_SHIP_WIDTH / 2) + 2) > CANVAS_WIDTH) {
+                player.body.x = 0 - (PLAYER_SHIP_WIDTH / 2) + 2;  //  + 2 just to see the tip of the wing
             }
 
             // //  Check collisions
@@ -235,7 +238,7 @@
 
         function render () {
 
-
+            game.debug.geom(healthBar,'#0fffff');
         }
 
         // ------------------------------------------------------------------------------------------------
@@ -257,22 +260,23 @@
 
         function enemyFires () {
 
-            // enemyBullet = enemyBullets.getFirstExists(false);
-            // livingEnemies.length = 0;
+            enemyBullet = enemyBullets.getFirstExists(false);
+            livingEnemies.length = 0;
 
-            // aliens.forEachAlive(function (alien) {
-            //     livingEnemies.push(alien);
-            // });
+            aliens.forEachAlive(function (alien) {
+                livingEnemies.push(alien);
+            });
 
-            // if (enemyBullet && livingEnemies.length > 0) {
-            //     var random = game.rnd.integerInRange(0, livingEnemies.length);
+            if (enemyBullet && livingEnemies.length > 0) {
+                var random = game.rnd.integerInRange(0, livingEnemies.length - 1);
 
-            //     var shooter = livingEnemies[random]; 
-            //     enemyBullet.reset(shooter.body.x, shooter.body.y);
+                var shooter = livingEnemies[random];
+                console.log(shooter.body.x);
+                enemyBullet.reset(shooter.body.x, shooter.body.y);
 
-            //     game.physics.moveToObject(enemyBullet, player, 120);
-            //     firingTimer = game.time.now + 2000;
-            // }
+                game.physics.arcade.moveToObject(enemyBullet, player, 120);
+                firingTimer = game.time.now + 2000;
+            }
         }
 
         function sendMeteor () {
@@ -357,7 +361,7 @@
             aliens.y = CANVAS_HEIGHT - 200;
 
             var tween = game.add.tween(aliens).to( {x: 130}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
-            tween.onComplete.add(function () { aliens.y += 10; }, this);
+            // tween.onComplete.add(function () { aliens.y += 10; }, this);
 
         }
 
