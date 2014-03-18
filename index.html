@@ -133,10 +133,16 @@
 
             //  group of meteors
             meteors = game.add.group();
+            meteors.enableBody = true;
+            meteors.physicsBodyType = Phaser.Physics.ARCADE;
             meteors.createMultiple(30, 'smallMeteor');
             meteors.setAll('anchor.x', 0.5);
             meteors.setAll('anchor.y', 1);
+            meteors.setAll('checkWorldBounds', true);
             meteors.setAll('outOfBoundsKill', true);
+            meteors.setAll('body.bounce.x', 1);
+            meteors.setAll('body.bounce.y', 1);
+            meteors.setAll('body.minBounceVelocity', 0);
 
             //  The enemies
             aliens = game.add.group();
@@ -146,7 +152,7 @@
 
             //  Explosion pool
             explosions = game.add.group();
-            explosions.createMultiple(30, 'explosion');
+            explosions.createMultiple(10, 'explosion');
             explosions.forEach(setupInvader, this);
 
             //  Controls to play the game
@@ -225,9 +231,9 @@
             //     enemyFires();
             // }
 
-            // if (game.time.now > meteorTimer) {
-            //     sendMeteor();
-            // }
+            if (game.time.now > meteorTimer) {
+                sendMeteor();
+            }
 
             //  Check if hero has moved to the other side
             if ((player.body.x + (PLAYER_SHIP_WIDTH / 2) - 2) < 0) {
@@ -244,6 +250,8 @@
             // game.physics.overlap(meteors, player, meteorHitsPlayer, null, this);
             // game.physics.overlap(bullets, meteors, bulletHitsMeteor, null, this);
             // game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
+
+            game.physics.arcade.collide(meteors);
 
         }
 
@@ -302,16 +310,17 @@
 
         function sendMeteor () {
 
-            var randomX = game.rnd.integerInRange(22, CANVAS_WIDTH - 48);
+            var randomX = game.rnd.integerInRange(0, CANVAS_WIDTH);
             meteor = meteors.getFirstExists(false);
 
-            // if (meteor) {
-            //     meteor.reset(randomX, -21);
-            //     meteor.body.velocity.y = 100;
-            //     // meteor.body.angularVelocity = 20;
-            //     meteor.body.rotation = game.rnd.integerInRange(1, 20);
-            //     meteorTimer = game.time.now + 300;
-            // }
+            if (meteor) {
+                meteor.reset(randomX, -21);
+                meteor.body.velocity.y = game.rnd.integerInRange(50, 200);
+                meteor.body.velocity.x = game.rnd.integerInRange(-30, 30);
+                // meteor.body.angularVelocity = 10;
+                // meteor.body.rotation = game.rnd.integerInRange(1, 20);
+                meteorTimer = game.time.now + 600;
+            }
 
         }
 
