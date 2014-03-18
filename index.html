@@ -30,6 +30,7 @@
 
         var player;
         var score = 0;
+        var gunHeat = 6;
 
         // groups
         var aliens;
@@ -45,6 +46,7 @@
         var mineTime = 0;
         var firingTimer = 0;
         var meteorTimer = 0;
+        var gunCooldown = 0;
 
         // control keys
         var cursors;
@@ -60,6 +62,8 @@
         var healthText;
 
         var healthBar;
+        var gunHeatBackgroundBar;
+        var gunHeatBar;
 
         var starfield;
         var backgroundScrollSpeed = 2;
@@ -72,6 +76,10 @@
         var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
         var HEALTH_BAR_X = 802;
         var HEALTH_BAR_Y = 46;
+        var GUN_HEAT_BAR_BG_X = 10;
+        var GUN_HEAT_BAR_BG_Y = 46;
+        var GUN_HEAT_BAR_X = 12;
+        var GUN_HEAT_BAR_Y = 48;
 
         var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
@@ -167,6 +175,8 @@
             healthText = game.add.text(800, 10, healthString + player.health, { fontSize: '26px', fill: '#e9e9e9' });
 
             healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
+            gunHeatBackgroundBar = new Phaser.Rectangle(GUN_HEAT_BAR_BG_X, GUN_HEAT_BAR_BG_Y, 102, 10);
+            gunHeatBar = new Phaser.Rectangle(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, 6, 6);
 
             // sounds
             s_laser = game.add.audio('s_laser');
@@ -222,6 +232,11 @@
                 fireBullet();
             }
 
+            // decrease gun heat
+            gunHeat = Math.max(6, gunHeat - 0.4);
+            updateHeatBar();
+
+
             // //  Check if it's dropping a mine
             // if (dropButton.isDown) {
             //     dropMine();
@@ -266,7 +281,21 @@
 
             game.debug.geom(healthBar, healthBarColor);
 
+            var gunHeatBarColor = "#2ecc71";
+            if ( gunHeat > 80 ) {
+                gunHeatBarColor = "#c0392b";
+            } else if ( gunHeat > 40 ) {
+                gunHeatBarColor = "#f1c40f";
+            }
+            game.debug.geom(gunHeatBackgroundBar, "#ddd");
+            game.debug.geom(gunHeatBar, gunHeatBarColor);
+
             // game.debug.bodyInfo(player, 32, 320);
+            game.debug.spriteBounds(player);
+            meteors.children.forEach(function(child, index) {
+                game.debug.spriteBounds(child);
+            });
+
         }
 
         // ------------------------------------------------------------------------------------------------
@@ -402,18 +431,32 @@
         function fireBullet () {
 
             //  To avoid them being allowed to fire too fast we set a time limit
-            if (game.time.now > bulletTime) {
+            if (game.time.now > bulletTime && game.time.now > gunCooldown) {
                 //  Grab the first bullet we can from the pool
                 bullet = bullets.getFirstExists(false);
 
                 if (bullet) {
+
                     //  And fire it
                     bullet.reset(player.x, player.y + 8);
                     bullet.body.velocity.y = -400;
                     bulletTime = game.time.now + 200;
                     // s_laser.play();
+
+                    // add heat to gun
+                    gunHeat = Math.min(gunHeat + 7, 100);
+                    updateHeatBar();
+                    if (gunHeat === 100) {
+                        gunCooldown = game.time.now + 3000; // if weapons gets too hot, needs to wait 3 seconds
+                    }
                 }
             }
+
+        }
+
+        function updateHeatBar () {
+
+             gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6);
 
         }
 
