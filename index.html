@@ -24,62 +24,12 @@
 
     <script src="js/phaser.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+    <script src="js/game_variables.js"></script>
+
     <script type="text/javascript">
 
     window.onload = function() {
-
-        var player;
-        var score = 0;
-        var gunHeat = 6;
-
-        // groups
-        var aliens;
-        var bullets;
-        var explosions;
-        var mines;
-        var meteors;
-        var enemyBullets;
-        var livingEnemies = [];
-
-        // time related vars
-        var bulletTime = 0;
-        var mineTime = 0;
-        var firingTimer = 0;
-        var meteorTimer = 0;
-        var gunCooldown = 0;
-
-        // control keys
-        var cursors;
-        var fireButton;
-        var dropButton;
-
-        // sounds
-        var s_laser;
-        var s_explosion;
-
-        // texts
-        var scoreText;
-        var healthText;
-
-        var healthBar;
-        var gunHeatBackgroundBar;
-        var gunHeatBar;
-
-        var starfield;
-        var backgroundScrollSpeed = 2;
-        var speedInc = 0.0005;
-
-        // constants
-        var CANVAS_WIDTH = 960;
-        var CANVAS_HEIGHT = $(window).height();
-        var PLAYER_SHIP_WIDTH = 28;
-        var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
-        var HEALTH_BAR_X = 802;
-        var HEALTH_BAR_Y = 46;
-        var GUN_HEAT_BAR_BG_X = 10;
-        var GUN_HEAT_BAR_BG_Y = 46;
-        var GUN_HEAT_BAR_X = 12;
-        var GUN_HEAT_BAR_Y = 48;
 
         var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
 
@@ -93,6 +43,7 @@
             game.load.image('mine', 'assets/mine.png');
             game.load.image('enemyBullet', 'assets/enemy-bullet.png');
             game.load.image('smallMeteor', 'assets/meteor-small.png');
+            game.load.image('powerup', 'assets/powerup.png');
 
             game.load.audio('s_laser', 'assets/audio/laser.wav');
             game.load.audio('s_explosion', 'assets/audio/explode.wav');
@@ -158,6 +109,16 @@
             aliens.physicsBodyType = Phaser.Physics.ARCADE;
             createAliens();
 
+            // power ups pool
+            powerups = game.add.group();
+            powerups.enableBody = true;
+            powerups.physicsBodyType = Phaser.Physics.ARCADE;
+            powerups.createMultiple(10, 'powerup');
+            powerups.setAll('anchor.x', 0.5);
+            powerups.setAll('anchor.y', 0.5);
+            powerups.setAll('checkWorldBounds', true);
+            powerups.setAll('outOfBoundsKill', true);
+
             //  Explosion pool
             explosions = game.add.group();
             explosions.createMultiple(10, 'explosion');
@@ -220,11 +181,28 @@
             }
 
             aliens.setAll('body.velocity.x', 0);
+            var atTheEdge = false;
+            var velocity = 0;
 
             if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-                aliens.setAll('body.velocity.x', -200);
+                aliens.forEachAlive(function(child, index) {
+                    if (child.body.x - 16 < 1) {
+                        atTheEdge = true;
+                    }
+                });
+                velocity = -200;
+                
             } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-                aliens.setAll('body.velocity.x', 200);
+                aliens.forEachAlive(function(child, index) {
+                    if (child.body.x + 16 > CANVAS_HEIGHT - 1) {
+                        atTheEdge = true;
+                    }
+                });
+                velocity = -200;
+            }
+
+            if(!atTheEdge) {
+                aliens.setAll('body.velocity.x', velocity);
             }
 
             // Check if is firing
@@ -259,11 +237,10 @@
             }
 
             // //  Check collisions
-            // game.physics.overlap(bullets, aliens, collisionHandler, null, this);
             // game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
             game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
-            // game.physics.overlap(meteors, player, meteorHitsPlayer, null, this);
-            // game.physics.overlap(bullets, meteors, bulletHitsMeteor, null, this);
+            game.physics.arcade.overlap(meteors, player, meteorHitsPlayer, null, this);
+            game.physics.arcade.overlap(bullets, meteors, bulletHitsMeteor, null, this);
             // game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
 
             game.physics.arcade.collide(meteors);
@@ -292,9 +269,9 @@
 
             // game.debug.bodyInfo(player, 32, 320);
             game.debug.spriteBounds(player);
-            meteors.children.forEach(function(child, index) {
-                game.debug.spriteBounds(child);
-            });
+            // meteors.children.forEach(function(child, index) {
+            //     game.debug.spriteBounds(child);
+            // });
 
         }
 
@@ -305,15 +282,6 @@
         // 
         // ------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------
-
-        function collisionHandler (bullet, alien) {
-
-            //  kill both objects
-            bullet.kill();
-            alien.kill();
-            createExplosion(alien.body.x, alien.body.y);
-
-        }
 
         function enemyFires () {
 
@@ -345,10 +313,10 @@
             if (meteor) {
                 meteor.reset(randomX, -21);
                 meteor.body.velocity.y = game.rnd.integerInRange(50, 200);
-                meteor.body.velocity.x = game.rnd.integerInRange(-30, 30);
+                meteor.body.velocity.x = game.rnd.integerInRange(-75, 75);
                 // meteor.body.angularVelocity = 10;
                 // meteor.body.rotation = game.rnd.integerInRange(1, 20);
-                meteorTimer = game.time.now + 600;
+                meteorTimer = game.time.now + 400;
             }
 
         }
@@ -357,7 +325,29 @@
 
             bullet.kill();
             meteor.kill();
-            createExplosion(bullet.body.x, bullet.body.y);
+            createExplosion(bullet.body.x, bullet.body.y - 36);
+
+            dropPowerUp(meteor.body.x, meteor.body.y);
+
+            // update player score
+            score += 5;
+            scoreText.text = scoreString + score;
+
+        }
+
+        function dropPowerUp(x, y) {
+
+            random = game.rnd.frac();
+            console.log("The random is: "+random);
+
+            if (random > 0.7) { // 30% probability of dropping powerup
+                powerup = powerups.getFirstExists(false);
+
+                if (powerup) {
+                    powerup.reset(x, y);
+                    powerup.body.velocity.y = 150;
+                }
+            }
 
         }
 
@@ -367,10 +357,14 @@
             createExplosion(player.body.x, player.body.y);
 
             // decrease player's health
-            playerHealth -= 10;
-            healthText.text = healthString + playerHealth;
-            checkGameOver();
+            damagePlayer(10);
+        }
 
+        function damagePlayer(damage) {
+            player.damage(damage);
+            healthText.text = healthString + player.health;
+            updateHealthBar();
+            checkGameOver();
         }
 
         function playerHitsEnemies (mine, alien) {
@@ -391,11 +385,7 @@
             createExplosion(player.body.x, player.body.y);
 
             // decrease player's health
-            player.damage(10);
-            console.log(player.health);
-            healthText.text = healthString + player.health;
-            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - 14.4, healthBar.height);
-            checkGameOver();
+            damagePlayer(20);
         }
 
         function setupInvader (invader) {
@@ -444,7 +434,7 @@
                     // s_laser.play();
 
                     // add heat to gun
-                    gunHeat = Math.min(gunHeat + 7, 100);
+                    gunHeat = Math.min(gunHeat + 15, 100);
                     updateHeatBar();
                     if (gunHeat === 100) {
                         gunCooldown = game.time.now + 3000; // if weapons gets too hot, needs to wait 3 seconds
@@ -455,9 +445,11 @@
         }
 
         function updateHeatBar () {
+            gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6);
+        }
 
-             gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6);
-
+        function updateHealthBar () {
+            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - 14.4, healthBar.height);
         }
 
         function dropMine () {
