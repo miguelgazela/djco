@@ -1,6 +1,16 @@
 var player;
 var score = 0;
 var gunHeat = 6;
+var timeAlive = 0;
+
+// IMAGES
+var IMAGE_LOGO = "logo";
+var IMAGE_STARFIELD = "starfield";
+var IMAGE_SHIP = "ship";
+var IMAGE_P1_BULLET = "p1_bullet";
+var IMAGE_MINE = "mine";
+var IMAGE_SMALL_METEOR = "small_meteor";
+var IMAGE_POWERUP = "powerup";
 
 // groups
 var aliens;
@@ -9,6 +19,7 @@ var explosions;
 var mines;
 var meteors;
 var enemyBullets;
+var powerups;
 var livingEnemies = [];
 
 // time related vars
@@ -42,11 +53,19 @@ var speedInc = 0.0005;
 // constants
 var CANVAS_WIDTH = 960;
 var CANVAS_HEIGHT = $(window).height();
+
 var PLAYER_SHIP_WIDTH = 28;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
+
 var HEALTH_BAR_X = 802;
 var HEALTH_BAR_Y = 46;
 var GUN_HEAT_BAR_BG_X = 10;
 var GUN_HEAT_BAR_BG_Y = 46;
 var GUN_HEAT_BAR_X = 12;
 var GUN_HEAT_BAR_Y = 48;
+
+var gameState;
+var GAMESTATE_NOTSTARTED = 'GAMESTATE_NOTSTARTED';
+var GAMESTATE_PLAYING = 'GAMESTATE_PLAYING';
+var GAMESTATE_DIED = 'GAMESTATE_DIED';
+var GAMESTATE_GAMEOVER = 'GAMESTATE_GAMEOVER';
