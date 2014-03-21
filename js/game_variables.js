@@ -2,6 +2,7 @@ var player;
 var score = 0;
 var gunHeat = 6;
 var timeAlive = 0;
+var playedOnce = false;
 
 // IMAGES
 var IMAGE_LOGO = "logo";
@@ -11,6 +12,8 @@ var IMAGE_P1_BULLET = "p1_bullet";
 var IMAGE_MINE = "mine";
 var IMAGE_SMALL_METEOR = "small_meteor";
 var IMAGE_POWERUP = "powerup";
+var IMAGE_BTN_PLAY = "btnPlay";
+var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
 
 // groups
 var aliens;
@@ -38,9 +41,11 @@ var dropButton;
 var s_laser;
 var s_explosion;
 
-// texts
-var scoreText;
-var healthText;
+// HUDs
+var hudTxtScore;
+var hudTxtHealth;
+var hudImgLogo;
+var hudBtnPlay;
 
 var healthBar;
 var gunHeatBackgroundBar;

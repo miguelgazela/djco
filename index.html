@@ -45,6 +45,8 @@
 
             game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
+            game.load.spritesheet(IMAGE_BTN_PLAY, 'assets/' + IMAGE_BTN_PLAY + '.png', 170, 76);
+            game.load.spritesheet(IMAGE_BTN_PLAY_AGAIN, 'assets/' + IMAGE_BTN_PLAY_AGAIN + '.png', 170, 76);
 
             game.load.audio('s_laser', 'assets/audio/laser.wav');
             game.load.audio('s_explosion', 'assets/audio/explode.wav');
@@ -58,6 +60,12 @@
             //  The scrolling starfield background
             starfield = game.add.tileSprite(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, 'starfield');
 
+            // Menu HUD
+            hudImgLogo = game.add.sprite(0, 40, IMAGE_LOGO);
+            hudImgLogo.x = game.world.centerX - hudImgLogo.width / 2;
+            hudBtnPlay = game.add.button(0, 300, IMAGE_BTN_PLAY, onBtnPlay, this, 1, 0, 1);
+            hudBtnPlay.x = game.world.width / 2 - hudBtnPlay.width / 2;
+
             //  The hero!
             player = game.add.sprite(CANVAS_WIDTH/2, CANVAS_HEIGHT - 320, 'ship');
             game.physics.enable(player, Phaser.Physics.ARCADE);
@@ -68,7 +76,7 @@
             bullets = game.add.group();
             bullets.enableBody = true;
             bullets.physicsBodyType = Phaser.Physics.ARCADE;
-            bullets.createMultiple(30, 'bullet');
+            bullets.createMultiple(30, IMAGE_P1_BULLET);
             bullets.setAll('checkWorldBounds', true);
             bullets.setAll('outOfBoundsKill', true);
             bullets.setAll('anchor.x', 0.5);
@@ -95,7 +103,7 @@
             meteors = game.add.group();
             meteors.enableBody = true;
             meteors.physicsBodyType = Phaser.Physics.ARCADE;
-            meteors.createMultiple(30, 'smallMeteor');
+            meteors.createMultiple(30, IMAGE_SMALL_METEOR);
             meteors.setAll('anchor.x', 0.5);
             meteors.setAll('anchor.y', 1);
             meteors.setAll('checkWorldBounds', true);
@@ -114,7 +122,7 @@
             powerups = game.add.group();
             powerups.enableBody = true;
             powerups.physicsBodyType = Phaser.Physics.ARCADE;
-            powerups.createMultiple(10, 'powerup');
+            powerups.createMultiple(10, IMAGE_POWERUP);
             powerups.setAll('anchor.x', 0.5);
             powerups.setAll('anchor.y', 0.5);
             powerups.setAll('checkWorldBounds', true);
@@ -131,11 +139,13 @@
             fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             dropButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
 
-            //  Game info
-            scoreString = 'Score : ';
-            scoreText = game.add.text(10, 10, scoreString + score, { fontSize: '26px', fill: '#e9e9e9' });
-            healthString = "Health: ";
-            healthText = game.add.text(800, 10, healthString + player.health, { fontSize: '26px', fill: '#e9e9e9' });
+            //  Game Hud
+            style = { fontSize: '26px', fill: '#e9e9e9' };
+            hudTxtScore = game.add.text(10, 10, "Score: " + score, style);
+            hudTxtScore.visible = false;
+
+            hudTxtHealth = game.add.text(800, 10, "Health: " + player.health, style);
+            hudTxtHealth.visible = false;
 
             healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
             gunHeatBackgroundBar = new Phaser.Rectangle(GUN_HEAT_BAR_BG_X, GUN_HEAT_BAR_BG_Y, 102, 10);
@@ -151,11 +161,14 @@
 
         function update () {
 
-            //  Scroll the background
-            backgroundScrollSpeed += speedInc;
-            starfield.tilePosition.y += backgroundScrollSpeed;
+            
 
             if (gameState == GAMESTATE_PLAYING) {
+
+                //  Scroll the background
+                starfield.tilePosition.y += backgroundScrollSpeed;
+                backgroundScrollSpeed += speedInc;
+
                 processInput();
 
                 // decrease gun heat
@@ -169,8 +182,6 @@
                 if (game.time.now > meteorTimer) {
                     sendMeteor();
                 }
-
-                
 
                 // //  Check collisions
                 // game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
@@ -262,31 +273,34 @@
 
         function render () {
 
-            var healthBarColor = "#2ecc71";
-            if (player.health < 30) {
-                healthBarColor = "#c0392b";
-            } else if (player.health < 75) {
-                healthBarColor = "#f1c40f";
-            }
-
-            game.debug.geom(healthBar, healthBarColor);
-
-            var gunHeatBarColor = "#2ecc71";
-            if ( gunHeat > 80 ) {
-                gunHeatBarColor = "#c0392b";
-            } else if ( gunHeat > 40 ) {
-                gunHeatBarColor = "#f1c40f";
-            }
-            game.debug.geom(gunHeatBackgroundBar, "#ddd");
-            game.debug.geom(gunHeatBar, gunHeatBarColor);
-
-            // game.debug.bodyInfo(player, 32, 320);
-            // game.debug.spriteBounds(player);
-            meteors.children.forEach(function(child, index) {
-                if (index < 2) {
-                    game.debug.spriteBounds(child);
+            if (gameState == GAMESTATE_PLAYING) {
+                var healthBarColor = "#2ecc71";
+                if (player.health < 30) {
+                    healthBarColor = "#c0392b";
+                } else if (player.health < 75) {
+                    healthBarColor = "#f1c40f";
                 }
-            });
+
+                game.debug.geom(healthBar, healthBarColor);
+
+                var gunHeatBarColor = "#2ecc71";
+                if ( gunHeat > 80 ) {
+                    gunHeatBarColor = "#c0392b";
+                } else if ( gunHeat > 40 ) {
+                    gunHeatBarColor = "#f1c40f";
+                }
+                game.debug.geom(gunHeatBackgroundBar, "#ddd");
+                game.debug.geom(gunHeatBar, gunHeatBarColor);
+
+                // game.debug.bodyInfo(player, 32, 320);
+                // game.debug.spriteBounds(player);
+                meteors.children.forEach(function(child, index) {
+                    if (index < 2) {
+                        game.debug.spriteBounds(child);
+                    }
+                });
+            }
+            
 
         }
 
@@ -346,7 +360,7 @@
 
             // update player score
             score += 5;
-            scoreText.text = scoreString + score;
+            hudTxtScore.text = "Score: " + score;
 
         }
 
@@ -376,7 +390,7 @@
 
         function damagePlayer(damage) {
             player.damage(damage);
-            healthText.text = healthString + player.health;
+            hudTxtHealth.text = "Health: " + player.health;
             updateHealthBar();
             checkGameOver();
         }
@@ -389,7 +403,7 @@
 
             //  Increase the score
             score += 20;
-            scoreText.content = scoreString + score;
+            hudTxtScore.content = "Score: " + score;
 
         }
 
@@ -487,6 +501,26 @@
             var explosion = explosions.getFirstDead();
             explosion.reset(x, y);
             explosion.play('explosion', 30, false, true);
+
+        }
+
+        function onBtnPlay() {
+
+            hudBtnPlay.visible = false;
+            hudBtnPlay.active = false;
+            hudTxtScore.visible = true;
+            hudTxtHealth.visible = true;
+
+            if (playedOnce) {
+                hudImgLogo.visible = false;
+            } else {
+                var tween = game.add.tween(hudImgLogo).to({alpha: 0}, 200, Phaser.Easing.Linear.None, true, 0, 0, false);
+                tween.onComplete.add(function() {
+                    hudImgLogo.visible = false;
+                });
+            }
+
+            gameState = GAMESTATE_PLAYING;
 
         }
 
