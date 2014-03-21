@@ -46,6 +46,7 @@ var hudTxtScore;
 var hudTxtHealth;
 var hudImgLogo;
 var hudBtnPlay;
+var hudBtnPlayAgain;
 
 var healthBar;
 var gunHeatBackgroundBar;

@@ -66,6 +66,11 @@
             hudBtnPlay = game.add.button(0, 300, IMAGE_BTN_PLAY, onBtnPlay, this, 1, 0, 1);
             hudBtnPlay.x = game.world.width / 2 - hudBtnPlay.width / 2;
 
+            hudBtnPlayAgain = game.add.button(0, 300, IMAGE_BTN_PLAY_AGAIN, onBtnPlayAgain, this, 1, 0, 1);
+            hudBtnPlayAgain.x = game.world.width / 2 - hudBtnPlayAgain.width / 2;
+            hudBtnPlayAgain.visible = false;
+            hudBtnPlayAgain.active = false;
+
             //  The hero!
             player = game.add.sprite(CANVAS_WIDTH/2, CANVAS_HEIGHT - 320, 'ship');
             game.physics.enable(player, Phaser.Physics.ARCADE);
@@ -392,7 +397,32 @@
             player.damage(damage);
             hudTxtHealth.text = "Health: " + player.health;
             updateHealthBar();
-            checkGameOver();
+            if (!player.alive) {
+               playerOneDied();
+            }
+        }
+
+        function playerOneDied() {
+
+            hudTxtScore.visible = false;
+            hudTxtHealth.visible = false;
+            playedOnce = true;
+
+            game.time.events.add(Phaser.Timer.SECOND * 3, gameOver, this);
+
+            gameState = GAMESTATE_DIED;
+        }
+
+        function gameOver() {
+            hudBtnPlayAgain.alpha = 0;
+            hudBtnPlayAgain.visible = true;
+
+            var tweenB = game.add.tween(hudBtnPlayAgain).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+            tweenB.onComplete.add(function() {
+                hudBtnPlayAgain.active = true;
+            })
+
+            gameState = GAMESTATE_GAMEOVER;
         }
 
         function playerHitsEnemies (mine, alien) {
@@ -524,14 +554,12 @@
 
         }
 
-        function loadImage(image) {
-            game.load.image(image, 'assets/' + image + '.png');
+        function onBtnPlayAgain() {
+
         }
 
-        function checkGameOver() {
-
-
-
+        function loadImage(image) {
+            game.load.image(image, 'assets/' + image + '.png');
         }
 
     };
