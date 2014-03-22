@@ -31,7 +31,7 @@
 
     window.onload = function() {
 
-        var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'Space Invaders', { preload: preload, create: create, update: update, render: render });
+        var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'FEUP Invaders', { preload: preload, create: create, update: update, render: render });
 
         function preload () {
 
@@ -250,6 +250,7 @@
 
             if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
                 aliens.forEachAlive(function(child, index) {
+                    console.log("Child.body.x = " + child.body.x + " Index: "+index);
                     if (child.body.x - 16 < 1) {
                         atTheEdge = true;
                     }
@@ -262,7 +263,7 @@
                         atTheEdge = true;
                     }
                 });
-                velocity = -200;
+                velocity = 200;
             }
 
             if(!atTheEdge) {
@@ -299,8 +300,13 @@
 
                 // game.debug.bodyInfo(player, 32, 320);
                 // game.debug.spriteBounds(player);
-                meteors.children.forEach(function(child, index) {
-                    if (index < 2) {
+                // meteors.children.forEach(function(child, index) {
+                //     if (index < 2 && child.alive) {
+                //         game.debug.spriteBounds(child);
+                //     }
+                // });
+                aliens.children.forEach(function(child, index) {
+                    if (index < 2 && child.alive) {
                         game.debug.spriteBounds(child);
                     }
                 });
@@ -460,15 +466,18 @@
             var DIST_BETWEEN = 140;
 
             for (var y = 0; y < 4; y++) {
+                var startPos = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
                 for (var x = 0; x < NUM_COL; x++) {
-                    var alien = aliens.create(x * DIST_BETWEEN, y * 50, 'invader');
+                        var alien = aliens.create(startPos + x * DIST_BETWEEN, y * 50, 'invader');
+                    
                     alien.anchor.setTo(0.5, 0.5);
-                    // alien.animations.add('fly', [0, 1, 2, 3], 20, true);
-                    // alien.play('fly');
+                    alien.animations.add('fly', [0, 1, 2, 3], 20, true);
+                    alien.play('fly');
                 }
             }
 
-            aliens.x = (CANVAS_WIDTH - (NUM_COL * 32 + (NUM_COL - 1) * (DIST_BETWEEN - 32))) / 2 + 16;
+            // aliens.x = (CANVAS_WIDTH - (NUM_COL * 32 + (NUM_COL - 1) * (DIST_BETWEEN - 32))) / 2 + 16;
+            aliens.x = ALIEN_SHIP_WIDTH / 2;
             aliens.y = CANVAS_HEIGHT - 200;
 
             // var tween = game.add.tween(aliens).to( {x: 130}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);

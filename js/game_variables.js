@@ -62,6 +62,7 @@ var CANVAS_HEIGHT = $(window).height();
 
 var PLAYER_SHIP_WIDTH = 28;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
+var ALIEN_SHIP_WIDTH = 32;
 
 var HEALTH_BAR_X = 802;
 var HEALTH_BAR_Y = 46;
