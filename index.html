@@ -193,6 +193,7 @@
                 game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
                 game.physics.arcade.overlap(meteors, player, meteorHitsPlayer, null, this);
                 game.physics.arcade.overlap(bullets, meteors, bulletHitsMeteor, null, this);
+                game.physics.arcade.overlap(aliens, meteors, bulletHitsMeteor, null, this);
                 // game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
 
                 game.physics.arcade.collide(meteors);
@@ -207,8 +208,11 @@
 
             if (cursors.left.isDown) {
                 player.body.velocity.x = -200;
+                player.angle = -15;
+
                 if (cursors.up.isDown) {
                     player.body.velocity.y = -200;
+
                 } else if (cursors.down.isDown) {
                     if (player.y < BOTTOM_LIMIT) {
                         player.body.velocity.y = 200;
@@ -216,6 +220,8 @@
                 }
             } else if (cursors.right.isDown) {
                 player.body.velocity.x = 200;
+                player.angle = 15;
+
                 if (cursors.up.isDown) {
                     player.body.velocity.y = -200;
                 } else if (cursors.down.isDown) {
@@ -225,10 +231,14 @@
                 }
             } else if (cursors.up.isDown) {
                 player.body.velocity.y = -200;
+                player.angle = 0;
             } else if (cursors.down.isDown) {
+                player.angle = 0;
                 if (player.y < BOTTOM_LIMIT) {
                     player.body.velocity.y = 200;
                 }
+            } else {
+                player.angle = 0;
             }
 
             //  Check if hero has moved to the other side
@@ -299,13 +309,13 @@
 
                 // game.debug.bodyInfo(player, 32, 320);
                 // game.debug.spriteBounds(player);
-                // meteors.children.forEach(function(child, index) {
-                //     if (index < 2 && child.alive) {
-                //         game.debug.spriteBounds(child);
-                //     }
-                // });
-                aliens.children.forEach(function(child, index) {
+                meteors.children.forEach(function(child, index) {
                     if (index < 2 && child.alive) {
+                        game.debug.spriteBounds(child);
+                    }
+                });
+                aliens.children.forEach(function(child, index) {
+                    if (index < 5 && child.alive) {
                         game.debug.spriteBounds(child);
                     }
                 });
@@ -363,6 +373,11 @@
         function bulletHitsMeteor (bullet, meteor) {
 
             bullet.kill();
+
+
+            console.log("Bullet.body.y = "+bullet.body.y);
+
+
             meteor.kill();
             createExplosion(bullet.body.x, bullet.body.y - 36);
 
@@ -461,12 +476,14 @@
 
         function createAliens () {
 
-            var NUM_COL = 6;
+            var NUM_COL = 3;
             var DIST_BETWEEN = 140;
+
+            var START_POS = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
 
             for (var y = 0; y < 4; y++) {
                 for (var x = 0; x < NUM_COL; x++) {
-                        var alien = aliens.create(x * DIST_BETWEEN, y * 50, 'invader');
+                        var alien = aliens.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + y * 50, 'invader');
                     
                     alien.anchor.setTo(0.5, 0.5);
                     alien.animations.add('fly', [0, 1, 2, 3], 20, true);
@@ -474,8 +491,8 @@
                 }
             }
 
-            aliens.x = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
-            aliens.y = CANVAS_HEIGHT - 200;
+            // aliens.x = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
+            // aliens.y = CANVAS_HEIGHT - 200;
 
             // var tween = game.add.tween(aliens).to( {x: 130}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
             // tween.onComplete.add(function () { aliens.y += 10; }, this);
