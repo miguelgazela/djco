@@ -45,6 +45,7 @@
 
             loadImage(IMAGE_STARFIELD);
             loadImage(IMAGE_SHIP);
+            loadImage(IMAGE_SHIP_DAMAGED);
             loadImage(IMAGE_LOGO);
             loadImage(IMAGE_P1_BULLET);
             loadImage(IMAGE_MINE);
@@ -86,6 +87,7 @@
 
             hudImgYouCallout = game.add.sprite(0, 0, IMAGE_YOU_CALLOUT);
             hudImgYouCallout.anchor.setTo(0.5, 0.5);
+            hudImgYouCallout.visible = false;
 
             //  The hero!
             player = game.add.sprite(CANVAS_WIDTH/2, CANVAS_HEIGHT - 320, 'ship');
@@ -392,7 +394,7 @@
             createExplosion(player.body.x, player.body.y);
 
             // decrease player's health
-            damagePlayer(50);
+            damagePlayer(10);
         }
 
         function onMeteorHitsAlien (alien, meteor) {
@@ -420,6 +422,11 @@
         }
 
         function damagePlayer(damage) {
+
+            if(player.health === 100) {
+                player.loadTexture(IMAGE_SHIP_DAMAGED);
+            }
+
             player.damage(damage);
 
             // update health HUD

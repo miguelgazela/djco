@@ -10,6 +10,7 @@ var IMAGE_LOGO = "logo";
 var IMAGE_ASTRONAUT = "astronaut";
 var IMAGE_STARFIELD = "starfield";
 var IMAGE_SHIP = "ship";
+var IMAGE_SHIP_DAMAGED = "ship_damaged";
 var IMAGE_P1_BULLET = "p1_bullet";
 var IMAGE_MINE = "mine";
 var IMAGE_SMALL_METEOR = "small_meteor";
@@ -70,7 +71,7 @@ var GAME_SPEED_QF = 1;
 var PICKUP_DROP_CHANGE = 0.2;
 var PICKUP_DESPAWN_RATE = 7;
 
-var PLAYER_SHIP_WIDTH = 28;
+var PLAYER_SHIP_WIDTH = 33;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
 var ALIEN_SHIP_WIDTH = 32;
 var PLAYER_BULLET_HEIGHT = 36;
