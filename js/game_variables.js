@@ -13,6 +13,7 @@ var IMAGE_STARFIELD = "starfield";
 var IMAGE_SHIP = "ship";
 var IMAGE_SHIP_DAMAGED = "ship_damaged";
 var IMAGE_P1_BULLET = "p1_bullet";
+var IMAGE_ALIEN_BULLET = "alien_bullet";
 var IMAGE_MINE = "mine";
 var IMAGE_SMALL_METEOR = "small_meteor";
 var IMAGE_POWERUP_A = "power_up_A";

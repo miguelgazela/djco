@@ -48,6 +48,7 @@
             loadImage(IMAGE_SHIP_DAMAGED);
             loadImage(IMAGE_LOGO);
             loadImage(IMAGE_P1_BULLET);
+            loadImage(IMAGE_ALIEN_BULLET);
             loadImage(IMAGE_MINE);
             loadImage(IMAGE_SMALL_METEOR);
             loadImage(IMAGE_POWERUP_A);
@@ -109,7 +110,7 @@
             alienBulletsGroup = game.add.group();
             alienBulletsGroup.enableBody = true;
             alienBulletsGroup.physicsBodyType = Phaser.Physics.ARCADE;
-            alienBulletsGroup.createMultiple(30, 'enemyBullet');
+            alienBulletsGroup.createMultiple(15, IMAGE_ALIEN_BULLET);
             alienBulletsGroup.setAll('anchor.x', 0.5);
             alienBulletsGroup.setAll('anchor.y', 1);
             alienBulletsGroup.setAll('checkWorldBounds', true);
@@ -156,8 +157,8 @@
 
             //  Controls to play the game
             cursors = game.input.keyboard.createCursorKeys();
-            fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             dropMineButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+            aliensFireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
             //  Game Hud
             var style = { fontSize: '26px', fill: '#e9e9e9' };
@@ -202,10 +203,6 @@
                 gunHeat = Math.max(6, gunHeat - (0.4 * GAME_SPEED_QF));
                 updateHeatBar();
 
-                // if (game.time.now > firingTimer) {
-                //     enemyFires();
-                // }
-
                 if (game.time.now > meteorTimer) {
                     sendMeteor();
                 }
@@ -232,7 +229,7 @@
 
         function processInput() {
 
-            //  Reset the player, then check the movement keys
+            //  Reset P1, then check the movement keys
             player.body.velocity.setTo(0, 0);
 
             if (cursors.left.isDown) {
@@ -281,6 +278,11 @@
                 player.body.x = 0 - (PLAYER_SHIP_WIDTH / 2) + 2;  //  + 2 just to see the tip of the wing
             }
 
+            // Check if P1 is firing
+            if (game.input.mousePointer.isDown) {
+                fireBullet();
+            }
+
             //  Check if it's dropping a mine
             if (dropMineButton.isDown) {
                 dropMine();
@@ -311,9 +313,8 @@
                 aliensGroup.setAll('body.velocity.x', velocity);
             }
 
-            // Check if is firing
-            if (fireButton.isDown) {
-                fireBullet();
+            if(aliensFireButton.isDown) {
+                alienFire();
             }
 
         }
@@ -540,23 +541,25 @@
         // ------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------
 
-        function enemyFires () {
+        function alienFire () {
 
-            enemyBullet = alienBulletsGroup.getFirstExists(false);
-            livingEnemies.length = 0;
+            if (game.time.now > firingTimer) {
+                enemyBullet = alienBulletsGroup.getFirstExists(false);
+                livingEnemies.length = 0;
 
-            aliensGroup.forEachAlive(function (alien) {
-                livingEnemies.push(alien);
-            });
+                aliensGroup.forEachAlive(function (alien) {
+                    livingEnemies.push(alien);
+                });
 
-            if (enemyBullet && livingEnemies.length > 0) {
-                var random = game.rnd.integerInRange(0, livingEnemies.length - 1);
+                if (enemyBullet && livingEnemies.length > 0) {
+                    var random = game.rnd.integerInRange(0, livingEnemies.length - 1);
 
-                var shooter = livingEnemies[random];
-                enemyBullet.reset(shooter.body.x, shooter.body.y);
+                    var shooter = livingEnemies[random];
+                    enemyBullet.reset(shooter.body.x, shooter.body.y);
 
-                game.physics.arcade.moveToObject(enemyBullet, player, 120);
-                firingTimer = game.time.now + 2000;
+                    game.physics.arcade.moveToObject(enemyBullet, player, 120);
+                    firingTimer = game.time.now + 1000;
+                }
             }
         }
 
