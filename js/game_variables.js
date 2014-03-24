@@ -3,9 +3,11 @@ var score = 0;
 var gunHeat = 6;
 var timeAlive = 0;
 var playedOnce = false;
+var astronaut;
 
 // IMAGES
 var IMAGE_LOGO = "logo";
+var IMAGE_ASTRONAUT = "astronaut";
 var IMAGE_STARFIELD = "starfield";
 var IMAGE_SHIP = "ship";
 var IMAGE_P1_BULLET = "p1_bullet";
@@ -16,6 +18,7 @@ var IMAGE_POWERUP_B = "power_up_B";
 var IMAGE_BTN_PLAY = "btnPlay";
 var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
 var IMAGE_ALIEN_SHIP = "alien_ship";
+var IMAGE_YOU_CALLOUT = "youCallout";
 
 // groups
 var aliens;
@@ -49,6 +52,7 @@ var hudTxtHealth;
 var hudImgLogo;
 var hudBtnPlay;
 var hudBtnPlayAgain;
+var hudImgYouCallout;
 
 var healthBar;
 var gunHeatBackgroundBar;
