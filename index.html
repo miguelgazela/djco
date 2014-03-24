@@ -50,6 +50,7 @@
             loadImage(IMAGE_MINE);
             loadImage(IMAGE_SMALL_METEOR);
             loadImage(IMAGE_POWERUP_A);
+            loadImage(IMAGE_POWERUP_B);
             loadImage(IMAGE_ALIEN_SHIP);
 
 
@@ -134,16 +135,23 @@
             aliens.physicsBodyType = Phaser.Physics.ARCADE;
             createAliens();
 
-            // power ups pool
-            powerups = game.add.group();
-            powerups.enableBody = true;
-            powerups.physicsBodyType = Phaser.Physics.ARCADE;
-            powerups.createMultiple(10, IMAGE_POWERUP_A);
-            powerups.setAll('anchor.x', 0.5);
-            powerups.setAll('anchor.y', 0.5);
-            powerups.setAll('checkWorldBounds', true);
-            powerups.setAll('outOfBoundsKill', true);
-            powerups.setAll('power', "MINE");
+            // pickups pool
+            pickupGroup = game.add.group();
+            pickupA = game.add.sprite(0, 0, IMAGE_POWERUP_A);
+            pickupA.anchor.setTo(0.5, 0.5);
+            pickupA.visible = false;
+            pickupB = game.add.sprite(0, 0, IMAGE_POWERUP_B);
+            pickupB.anchor.setTo(0.5, 0.5);
+            pickupB.visible = false;
+
+            // powerups.enableBody = true;
+            // powerups.physicsBodyType = Phaser.Physics.ARCADE;
+            // powerups.createMultiple(10, IMAGE_POWERUP_A);
+            // powerups.setAll('anchor.x', 0.5);
+            // powerups.setAll('anchor.y', 0.5);
+            // powerups.setAll('checkWorldBounds', true);
+            // powerups.setAll('outOfBoundsKill', true);
+            // powerups.setAll('power', "MINE");
 
             //  Explosion pool
             explosions = game.add.group();
@@ -387,7 +395,7 @@
             meteor.kill();
 
             createExplosion(bullet.body.x, bullet.body.y - 36);
-            dropPowerUp(meteor.body.x, meteor.body.y);
+            maybeDropPickup(meteor.body.x, meteor.body.y);
 
             // update player score
             score += 5;
@@ -395,18 +403,33 @@
 
         }
 
-        function dropPowerUp(x, y) {
+        function maybeDropPickup(x, y) {
 
-            random = game.rnd.frac();
 
-            if (random > 0.8) { // 20% probability of dropping powerup
-                powerup = powerups.getFirstExists(false);
+            if(game.rnd.frac() <= PICKUP_DROP_CHANGE && gameState === GAMESTATE_PLAYING) {
+                var pickupType;
+                var random = game.rnd.frac();
 
-                if (powerup) {
-                    powerup.reset(x, y);
-                    powerup.body.velocity.y = 150;
+                if (random <= 0.5) {
+                    pickupType = IMAGE_POWERUP_A;
+                } else {
+                    pickupType = IMAGE_POWERUP_B;
                 }
+
+                dropPickup(x, y, pickupType);
             }
+        }
+
+        function dropPickup(x, y, pickupType) {
+
+            var pickup = pickupGroup.create(0, 0, pickupType);
+            pickup.anchor.setTo(0.5, 0.5);
+            pickup.reset(x, y);
+            pickup.type = pickupType;
+
+            game.time.events.add(Phaser.Timer.SECOND * PICKUP_DESPAWN_RATE, function() {
+                pickup.kill();
+            }, this);
 
         }
 
