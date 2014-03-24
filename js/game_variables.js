@@ -11,9 +11,11 @@ var IMAGE_SHIP = "ship";
 var IMAGE_P1_BULLET = "p1_bullet";
 var IMAGE_MINE = "mine";
 var IMAGE_SMALL_METEOR = "small_meteor";
-var IMAGE_POWERUP = "powerup";
+var IMAGE_POWERUP_A = "power_up_A";
+var IMAGE_POWERUP_B = "power_up_B";
 var IMAGE_BTN_PLAY = "btnPlay";
 var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
+var IMAGE_ALIEN_SHIP = "alien_ship";
 
 // groups
 var aliens;
@@ -59,6 +61,8 @@ var speedInc = 0.0005;
 // constants
 var CANVAS_WIDTH = 960;
 var CANVAS_HEIGHT = $(window).height();
+
+var GAME_SPEED_QF = 1;
 
 var PLAYER_SHIP_WIDTH = 28;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;

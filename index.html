@@ -41,9 +41,11 @@
             loadImage(IMAGE_P1_BULLET);
             loadImage(IMAGE_MINE);
             loadImage(IMAGE_SMALL_METEOR);
-            loadImage(IMAGE_POWERUP);
+            loadImage(IMAGE_POWERUP_A);
+            loadImage(IMAGE_ALIEN_SHIP);
 
-            game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
+
+            // game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
             game.load.spritesheet(IMAGE_BTN_PLAY, 'assets/' + IMAGE_BTN_PLAY + '.png', 170, 76);
             game.load.spritesheet(IMAGE_BTN_PLAY_AGAIN, 'assets/' + IMAGE_BTN_PLAY_AGAIN + '.png', 170, 76);
@@ -102,6 +104,7 @@
             mines.createMultiple(30, 'mine');
             mines.setAll('anchor.x', 0.5);
             mines.setAll('anchor.y', 1);
+            mines.setAll('checkWorldBounds', true);
             mines.setAll('outOfBoundsKill', true);
 
             //  group of meteors
@@ -127,7 +130,7 @@
             powerups = game.add.group();
             powerups.enableBody = true;
             powerups.physicsBodyType = Phaser.Physics.ARCADE;
-            powerups.createMultiple(10, IMAGE_POWERUP);
+            powerups.createMultiple(10, IMAGE_POWERUP_A);
             powerups.setAll('anchor.x', 0.5);
             powerups.setAll('anchor.y', 0.5);
             powerups.setAll('checkWorldBounds', true);
@@ -161,23 +164,20 @@
             s_explosion = game.add.audio('s_explosion');
 
             gameState = GAMESTATE_NOTSTARTED;
-
         }
 
         function update () {
 
-            
-
             if (gameState == GAMESTATE_PLAYING) {
 
                 //  Scroll the background
-                starfield.tilePosition.y += backgroundScrollSpeed;
+                starfield.tilePosition.y += backgroundScrollSpeed * GAME_SPEED_QF;
                 backgroundScrollSpeed += speedInc;
 
                 processInput();
 
                 // decrease gun heat
-                gunHeat = Math.max(6, gunHeat - 0.4);
+                gunHeat = Math.max(6, gunHeat - (0.4 * GAME_SPEED_QF));
                 updateHeatBar();
 
                 // if (game.time.now > firingTimer) {
@@ -241,6 +241,9 @@
                 player.angle = 0;
             }
 
+            player.body.velocity.x *= GAME_SPEED_QF;
+            player.body.velocity.y *= GAME_SPEED_QF;
+
             //  Check if hero has moved to the other side
             if ((player.body.x + (PLAYER_SHIP_WIDTH / 2) - 2) < 0) {
                 player.body.x = CANVAS_WIDTH + (PLAYER_SHIP_WIDTH / 2) - 2;  //  -2 just to see the tip of the wing
@@ -264,7 +267,7 @@
                         atTheEdge = true;
                     }
                 });
-                velocity = -200;
+                velocity = -200 * GAME_SPEED_QF;
                 
             } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
                 aliens.forEachAlive(function(child, index) {
@@ -272,7 +275,7 @@
                         atTheEdge = true;
                     }
                 });
-                velocity = 200;
+                velocity = 200 * GAME_SPEED_QF;
             }
 
             if(!atTheEdge) {
@@ -365,7 +368,7 @@
                 meteor.body.velocity.x = game.rnd.integerInRange(-50, 50);
                 // meteor.body.angularVelocity = 10;
                 // meteor.body.rotation = game.rnd.integerInRange(1, 20);
-                meteorTimer = game.time.now + 400;
+                meteorTimer = game.time.now + (400 / GAME_SPEED_QF);
             }
 
         }
@@ -373,14 +376,9 @@
         function bulletHitsMeteor (bullet, meteor) {
 
             bullet.kill();
-
-
-            console.log("Bullet.body.y = "+bullet.body.y);
-
-
             meteor.kill();
-            createExplosion(bullet.body.x, bullet.body.y - 36);
 
+            createExplosion(bullet.body.x, bullet.body.y - 36);
             dropPowerUp(meteor.body.x, meteor.body.y);
 
             // update player score
@@ -476,18 +474,18 @@
 
         function createAliens () {
 
-            var NUM_COL = 3;
+            var NUM_COL = 5;
             var DIST_BETWEEN = 140;
 
             var START_POS = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
 
             for (var y = 0; y < 4; y++) {
                 for (var x = 0; x < NUM_COL; x++) {
-                        var alien = aliens.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + y * 50, 'invader');
+                        var alien = aliens.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + 16 + y * 50, IMAGE_ALIEN_SHIP);
                     
                     alien.anchor.setTo(0.5, 0.5);
-                    alien.animations.add('fly', [0, 1, 2, 3], 20, true);
-                    alien.play('fly');
+                    // alien.animations.add('fly', [0, 1, 2, 3], 20, true);
+                    // alien.play('fly');
                 }
             }
 
@@ -510,15 +508,15 @@
 
                     //  And fire it
                     bullet.reset(player.x, player.y + 8);
-                    bullet.body.velocity.y = -400;
-                    bulletTime = game.time.now + 200;
+                    bullet.body.velocity.y = -400 * GAME_SPEED_QF;
+                    bulletTime = game.time.now + (200 / GAME_SPEED_QF);
                     // s_laser.play();
 
                     // add heat to gun
                     gunHeat = Math.min(gunHeat + 15, 100);
                     updateHeatBar();
                     if (gunHeat === 100) {
-                        gunCooldown = game.time.now + 3000; // if weapons gets too hot, needs to wait 3 seconds
+                        gunCooldown = game.time.now + (3000 * GAME_SPEED_QF); // if weapons gets too hot, needs to wait 3 seconds
                     }
                 }
             }
@@ -526,7 +524,7 @@
         }
 
         function updateHeatBar () {
-            gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6);
+            gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6 * GAME_SPEED_QF);
         }
 
         function updateHealthBar () {
@@ -541,7 +539,7 @@
                 if (mine) {
                     mine.reset(player.x, player.y + 12);
                     mine.body.velocity.y = 100;
-                    mineTime = game.time.now + 400;
+                    mineTime = game.time.now + (400 / GAME_SPEED_QF);
                 }
             }
 
