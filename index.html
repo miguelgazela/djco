@@ -146,6 +146,8 @@
 
             // pickups pool
             pickupGroup = game.add.group();
+            pickupGroup.enableBody = true;
+            pickupGroup.physicsBodyType = Phaser.Physics.ARCADE;
 
             //  Explosion pool
             explosionsGroup = game.add.group();
@@ -411,10 +413,11 @@
 
         function onMeteorHitsAlien (alien, meteor) {
             meteor.kill();
+            //alien.kill();
         }
 
         function onPickupOverlap (player, pickup) {
-
+            console.log(pickup.type);
         }
 
         // ------------------------------------------------------------------------------------------------
