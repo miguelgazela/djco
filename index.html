@@ -99,14 +99,14 @@
             bullets.setAll('anchor.y', 1);
 
             //  The enemy's bullets
-            enemyBullets = game.add.group();
-            enemyBullets.enableBody = true;
-            enemyBullets.physicsBodyType = Phaser.Physics.ARCADE;
-            enemyBullets.createMultiple(30, 'enemyBullet');
-            enemyBullets.setAll('anchor.x', 0.5);
-            enemyBullets.setAll('anchor.y', 1);
-            enemyBullets.setAll('checkWorldBounds', true);
-            enemyBullets.setAll('outOfBoundsKill', true);
+            alienBulletsGroup = game.add.group();
+            alienBulletsGroup.enableBody = true;
+            alienBulletsGroup.physicsBodyType = Phaser.Physics.ARCADE;
+            alienBulletsGroup.createMultiple(30, 'enemyBullet');
+            alienBulletsGroup.setAll('anchor.x', 0.5);
+            alienBulletsGroup.setAll('anchor.y', 1);
+            alienBulletsGroup.setAll('checkWorldBounds', true);
+            alienBulletsGroup.setAll('outOfBoundsKill', true);
 
             //  Our mines group
             mines = game.add.group();
@@ -143,15 +143,6 @@
             pickupB = game.add.sprite(0, 0, IMAGE_POWERUP_B);
             pickupB.anchor.setTo(0.5, 0.5);
             pickupB.visible = false;
-
-            // powerups.enableBody = true;
-            // powerups.physicsBodyType = Phaser.Physics.ARCADE;
-            // powerups.createMultiple(10, IMAGE_POWERUP_A);
-            // powerups.setAll('anchor.x', 0.5);
-            // powerups.setAll('anchor.y', 0.5);
-            // powerups.setAll('checkWorldBounds', true);
-            // powerups.setAll('outOfBoundsKill', true);
-            // powerups.setAll('power', "MINE");
 
             //  Explosion pool
             explosions = game.add.group();
@@ -205,12 +196,15 @@
                 }
 
                 // //  Check collisions
-                // game.physics.overlap(mines, aliens, playerHitsEnemies, null, this);
-                game.physics.arcade.overlap(enemyBullets, player, enemyHitsPlayer, null, this);
-                game.physics.arcade.overlap(meteors, player, meteorHitsPlayer, null, this);
-                game.physics.arcade.overlap(bullets, meteors, bulletHitsMeteor, null, this);
-                game.physics.arcade.overlap(aliens, meteors, bulletHitsMeteor, null, this);
-                // game.physics.overlap(enemyBullets, meteors, bulletHitsMeteor, null, this);
+                game.physics.arcade.overlap(alienBulletsGroup, player, onAlienHitsPlayer, null, this);
+                game.physics.arcade.overlap(alienBulletsGroup, meteors, onAlienBulletsHitMeteors, null, this);
+                game.physics.arcade.overlap(meteors, player, onMeteorHitsPlayer, null, this);
+                game.physics.arcade.overlap(bullets, meteors, onPlayerBulletsHitMeteors, null, this);
+                game.physics.arcade.overlap(aliens, meteors, onMeteorHitsAlien, null, this);
+                game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
+
+                // game.physics.overlap(mines, aliens, onPlayerMineHitsALien, null, this);                
+                // game.physics.overlap(alienBulletsGroup, meteors, onPlayerBulletsHitMeteors, null, this);
 
                 game.physics.arcade.collide(meteors);
             }
@@ -346,6 +340,149 @@
         // ------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------
         //  
+        //                                          COLLISIONS CALLBACKS
+        // 
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+
+        function onPlayerBulletsHitMeteors (bullet, meteor) {
+
+            bulletHitsMeteor(bullet, meteor);
+
+            // update player score
+            score += 5;
+            hudTxtScore.text = "Score: " + score;
+
+        }
+
+        function onPlayerMineHitALien (mine, alien) {
+
+            mine.kill();
+            alien.kill();
+            createExplosion(alien.body.x, alien.body.y);
+
+            //  Increase the score
+            score += 20;
+            hudTxtScore.content = "Score: " + score;
+
+        }
+
+        function onAlienBulletsHitMeteors (bullet, meteor) {
+            bulletHitsMeteor(bullet, meteor);
+        }
+
+        function onAlienHitsPlayer (player, bullet) {
+
+            bullet.kill();
+            createExplosion(player.body.x, player.body.y);
+
+            // decrease player's health
+            damagePlayer(20);
+        }
+
+        function onMeteorHitsPlayer (player, meteor) {
+
+            meteor.kill();
+            createExplosion(player.body.x, player.body.y);
+
+            // decrease player's health
+            damagePlayer(10);
+        }
+
+        function onMeteorHitsAlien (alien, meteor) {
+            meteor.kill();
+        }
+
+        function onPickupOverlap (player, pickup) {
+
+        }
+
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+        //  
+        //                               COLLISIONS CALLBACKS AUXILIARY FUNCTIONS
+        // 
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+
+        function bulletHitsMeteor(bullet, meteor) {
+            bullet.kill();
+            meteor.kill();
+
+            createExplosion(bullet.body.x, bullet.body.y - bullet.height);
+            maybeDropPickup(meteor.body.x, meteor.body.y);
+        }
+
+        function damagePlayer(damage) {
+            player.damage(damage);
+
+            // update health HUD
+            hudTxtHealth.text = "Health: " + player.health;
+            updateHealthBar();
+
+            if (!player.alive) {
+               playerOneDied();
+            }
+        }
+
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+        //  
+        //                                    Gamestate related functions
+        // 
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+
+        function playerOneDied() {
+
+            hudTxtScore.visible = false;
+            hudTxtHealth.visible = false;
+            playedOnce = true;
+
+            game.time.events.add(Phaser.Timer.SECOND * 3, gameOver, this);
+
+            gameState = GAMESTATE_DIED;
+        }
+
+        function gameOver() {
+            hudBtnPlayAgain.alpha = 0;
+            hudBtnPlayAgain.visible = true;
+
+            var tweenB = game.add.tween(hudBtnPlayAgain).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+            tweenB.onComplete.add(function() {
+                hudBtnPlayAgain.active = true;
+            })
+
+            gameState = GAMESTATE_GAMEOVER;
+        }
+
+        function onBtnPlay() {
+
+            hudBtnPlay.visible = false;
+            hudBtnPlay.active = false;
+            hudTxtScore.visible = true;
+            hudTxtHealth.visible = true;
+
+            if (playedOnce) {
+                hudImgLogo.visible = false;
+            } else {
+                var tween = game.add.tween(hudImgLogo).to({alpha: 0}, 200, Phaser.Easing.Linear.None, true, 0, 0, false);
+                tween.onComplete.add(function() {
+                    hudImgLogo.visible = false;
+                });
+            }
+
+            gameState = GAMESTATE_PLAYING;
+
+        }
+
+        function onBtnPlayAgain() {
+
+        }
+
+        // ------------------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------------------
+        //  
         //                                          Custom functions
         // 
         // ------------------------------------------------------------------------------------------------
@@ -353,7 +490,7 @@
 
         function enemyFires () {
 
-            enemyBullet = enemyBullets.getFirstExists(false);
+            enemyBullet = alienBulletsGroup.getFirstExists(false);
             livingEnemies.length = 0;
 
             aliens.forEachAlive(function (alien) {
@@ -389,20 +526,6 @@
 
         }
 
-        function bulletHitsMeteor (bullet, meteor) {
-
-            bullet.kill();
-            meteor.kill();
-
-            createExplosion(bullet.body.x, bullet.body.y - 36);
-            maybeDropPickup(meteor.body.x, meteor.body.y);
-
-            // update player score
-            score += 5;
-            hudTxtScore.text = "Score: " + score;
-
-        }
-
         function maybeDropPickup(x, y) {
 
 
@@ -433,67 +556,17 @@
 
         }
 
-        function meteorHitsPlayer (player, meteor) {
+        
 
-            meteor.kill();
-            createExplosion(player.body.x, player.body.y);
+        
 
-            // decrease player's health
-            damagePlayer(10);
-        }
+        
 
-        function damagePlayer(damage) {
-            player.damage(damage);
-            hudTxtHealth.text = "Health: " + player.health;
-            updateHealthBar();
-            if (!player.alive) {
-               playerOneDied();
-            }
-        }
+        
 
-        function playerOneDied() {
 
-            hudTxtScore.visible = false;
-            hudTxtHealth.visible = false;
-            playedOnce = true;
 
-            game.time.events.add(Phaser.Timer.SECOND * 3, gameOver, this);
-
-            gameState = GAMESTATE_DIED;
-        }
-
-        function gameOver() {
-            hudBtnPlayAgain.alpha = 0;
-            hudBtnPlayAgain.visible = true;
-
-            var tweenB = game.add.tween(hudBtnPlayAgain).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
-            tweenB.onComplete.add(function() {
-                hudBtnPlayAgain.active = true;
-            })
-
-            gameState = GAMESTATE_GAMEOVER;
-        }
-
-        function playerHitsEnemies (mine, alien) {
-
-            mine.kill();
-            alien.kill();
-            createExplosion(alien.body.x, alien.body.y);
-
-            //  Increase the score
-            score += 20;
-            hudTxtScore.content = "Score: " + score;
-
-        }
-
-        function enemyHitsPlayer (player, bullet) {
-
-            bullet.kill();
-            createExplosion(player.body.x, player.body.y);
-
-            // decrease player's health
-            damagePlayer(20);
-        }
+        
 
         function setupInvader (invader) {
 
@@ -583,30 +656,6 @@
             var explosion = explosions.getFirstDead();
             explosion.reset(x, y);
             explosion.play('explosion', 30, false, true);
-
-        }
-
-        function onBtnPlay() {
-
-            hudBtnPlay.visible = false;
-            hudBtnPlay.active = false;
-            hudTxtScore.visible = true;
-            hudTxtHealth.visible = true;
-
-            if (playedOnce) {
-                hudImgLogo.visible = false;
-            } else {
-                var tween = game.add.tween(hudImgLogo).to({alpha: 0}, 200, Phaser.Easing.Linear.None, true, 0, 0, false);
-                tween.onComplete.add(function() {
-                    hudImgLogo.visible = false;
-                });
-            }
-
-            gameState = GAMESTATE_PLAYING;
-
-        }
-
-        function onBtnPlayAgain() {
 
         }
 
