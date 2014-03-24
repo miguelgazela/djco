@@ -3,6 +3,7 @@ var score = 0;
 var gunHeat = 6;
 var timeAlive = 0;
 var playedOnce = false;
+var numberMines = 3;
 var astronaut;
 
 // IMAGES
@@ -22,13 +23,13 @@ var IMAGE_ALIEN_SHIP = "alien_ship";
 var IMAGE_YOU_CALLOUT = "youCallout";
 
 // groups
-var aliens;
-var bullets;
-var explosions;
-var mines;
-var meteors;
-var enemyBullets;
-var powerups;
+var aliensGroup;
+var bulletsGroup;
+var explosionsGroup;
+var minesGroup;
+var meteorsGroup;
+var alienBulletsGroup;
+var pickupGroup;
 var livingEnemies = [];
 
 // time related vars
@@ -50,6 +51,7 @@ var s_explosion;
 // HUDs
 var hudTxtScore;
 var hudTxtHealth;
+var hudTxtMines;
 var hudImgLogo;
 var hudBtnPlay;
 var hudBtnPlayAgain;
@@ -80,9 +82,9 @@ var ALIEN_BULLET_HEIGHT = 9;
 var HEALTH_BAR_X = 802;
 var HEALTH_BAR_Y = 46;
 var GUN_HEAT_BAR_BG_X = 10;
-var GUN_HEAT_BAR_BG_Y = 46;
-var GUN_HEAT_BAR_X = 12;
-var GUN_HEAT_BAR_Y = 48;
+var GUN_HEAT_BAR_BG_Y = 70;
+var GUN_HEAT_BAR_X = GUN_HEAT_BAR_BG_X + 2;
+var GUN_HEAT_BAR_Y = GUN_HEAT_BAR_BG_Y + 2;
 
 var gameState;
 var GAMESTATE_NOTSTARTED = 'GAMESTATE_NOTSTARTED';

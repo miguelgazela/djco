@@ -116,12 +116,13 @@
             alienBulletsGroup.setAll('outOfBoundsKill', true);
 
             //  Our mines group
-            mines = game.add.group();
-            mines.createMultiple(30, 'mine');
-            mines.setAll('anchor.x', 0.5);
-            mines.setAll('anchor.y', 1);
-            mines.setAll('checkWorldBounds', true);
-            mines.setAll('outOfBoundsKill', true);
+            minesGroup = game.add.group();
+            minesGroup.enableBody = true;
+            minesGroup.physicsBodyType = Phaser.Physics.ARCADE;
+            minesGroup.setAll('anchor.x', 0.5);
+            minesGroup.setAll('anchor.y', 0.5);
+            minesGroup.setAll('checkWorldBounds', true);
+            minesGroup.setAll('outOfBoundsKill', true);
 
             //  group of meteors
             meteorsGroup = game.add.group();
@@ -156,15 +157,25 @@
             //  Controls to play the game
             cursors = game.input.keyboard.createCursorKeys();
             fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            dropButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
+            dropMineButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
 
             //  Game Hud
-            style = { fontSize: '26px', fill: '#e9e9e9' };
+            var style = { fontSize: '26px', fill: '#e9e9e9' };
             hudTxtScore = game.add.text(10, 10, "Score: " + score, style);
             hudTxtScore.visible = false;
 
             hudTxtHealth = game.add.text(800, 10, "Health: " + player.health, style);
             hudTxtHealth.visible = false;
+
+            hudTxtMines = game.add.text(10, 36, "Mines: ", {fontSize: '26px', fill: '#e9e9e9'});
+            hudTxtMines.visible = false;
+
+            for(var i = 0; i < numberMines; i++) {
+                var mine = minesGroup.create(110 + i * 20, 53, IMAGE_MINE);
+                mine.anchor.setTo(0.5, 0.5);
+                mine.alpha = 0.7;
+            }
+            minesGroup.setAll('visible', false);
 
             healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
             gunHeatBackgroundBar = new Phaser.Rectangle(GUN_HEAT_BAR_BG_X, GUN_HEAT_BAR_BG_Y, 102, 10);
@@ -206,8 +217,8 @@
                 game.physics.arcade.overlap(bulletsGroup, meteorsGroup, onPlayerBulletsHitMeteors, null, this);
                 game.physics.arcade.overlap(aliensGroup, meteorsGroup, onMeteorHitsAlien, null, this);
                 game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
+                game.physics.arcade.overlap(minesGroup, aliensGroup, onMineHitsAlien, null, this);
 
-                // game.physics.overlap(mines, aliens, onPlayerMineHitsALien, null, this);                
                 // game.physics.overlap(alienBulletsGroup, meteors, onPlayerBulletsHitMeteors, null, this);
 
                 // game.physics.arcade.collide(meteorsGroup);
@@ -270,10 +281,10 @@
                 player.body.x = 0 - (PLAYER_SHIP_WIDTH / 2) + 2;  //  + 2 just to see the tip of the wing
             }
 
-            // //  Check if it's dropping a mine
-            // if (dropButton.isDown) {
-            //     dropMine();
-            // }
+            //  Check if it's dropping a mine
+            if (dropMineButton.isDown) {
+                dropMine();
+            }
 
             aliensGroup.setAll('body.velocity.x', 0);
             var atTheEdge = false;
@@ -363,7 +374,7 @@
 
         }
 
-        function onPlayerMineHitALien (mine, alien) {
+        function onMineHitsAlien (mine, alien) {
 
             mine.kill();
             alien.kill();
@@ -468,6 +479,8 @@
             hudBtnPlay.active = false;
             hudTxtScore.visible = true;
             hudTxtHealth.visible = true;
+            hudTxtMines.visible = true;
+            minesGroup.setAll('visible', true);
 
             if (playedOnce) {
                 hudImgLogo.visible = false;
@@ -627,6 +640,22 @@
 
         }
 
+        function dropMine () {
+
+            if (game.time.now > mineTime && numberMines > 0) {
+
+                mine = minesGroup.getAt(numberMines - 1);
+
+                if (mine) {
+                    numberMines -= 1;
+                    mine.reset(player.x, player.y + 12);
+                    mine.body.velocity.y = 100;
+                    mineTime = game.time.now + (400 / GAME_SPEED_QF);
+                }
+            }
+
+        }
+
         function updateHeatBar () {
             gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6 * GAME_SPEED_QF);
         }
@@ -635,19 +664,7 @@
             healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - 14.4, healthBar.height);
         }
 
-        function dropMine () {
-
-            if (game.time.now > mineTime) {
-                mine = mines.getFirstExists(false);
-
-                if (mine) {
-                    mine.reset(player.x, player.y + 12);
-                    mine.body.velocity.y = 100;
-                    mineTime = game.time.now + (400 / GAME_SPEED_QF);
-                }
-            }
-
-        }
+        
 
         function positionYouCalloutOnAstronaut() {
             hudImgYouCallout.x = astronaut.x;
