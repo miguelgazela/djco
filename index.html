@@ -89,14 +89,14 @@
             player.health = 100;
 
             //  Our bullet group
-            bullets = game.add.group();
-            bullets.enableBody = true;
-            bullets.physicsBodyType = Phaser.Physics.ARCADE;
-            bullets.createMultiple(30, IMAGE_P1_BULLET);
-            bullets.setAll('checkWorldBounds', true);
-            bullets.setAll('outOfBoundsKill', true);
-            bullets.setAll('anchor.x', 0.5);
-            bullets.setAll('anchor.y', 1);
+            bulletsGroup = game.add.group();
+            bulletsGroup.enableBody = true;
+            bulletsGroup.physicsBodyType = Phaser.Physics.ARCADE;
+            bulletsGroup.createMultiple(30, IMAGE_P1_BULLET);
+            bulletsGroup.setAll('checkWorldBounds', true);
+            bulletsGroup.setAll('outOfBoundsKill', true);
+            bulletsGroup.setAll('anchor.x', 0.5);
+            bulletsGroup.setAll('anchor.y', 1);
 
             //  The enemy's bullets
             alienBulletsGroup = game.add.group();
@@ -117,37 +117,34 @@
             mines.setAll('outOfBoundsKill', true);
 
             //  group of meteors
-            meteors = game.add.group();
-            meteors.enableBody = true;
-            meteors.physicsBodyType = Phaser.Physics.ARCADE;
-            meteors.createMultiple(30, IMAGE_SMALL_METEOR);
-            meteors.setAll('anchor.x', 0.5);
-            meteors.setAll('anchor.y', 1);
-            meteors.setAll('checkWorldBounds', true);
-            meteors.setAll('outOfBoundsKill', true);
-            meteors.setAll('body.bounce.x', 1);
-            meteors.setAll('body.bounce.y', 1);
-            meteors.setAll('body.minBounceVelocity', 0);
+            meteorsGroup = game.add.group();
+            meteorsGroup.enableBody = true;
+            meteorsGroup.physicsBodyType = Phaser.Physics.ARCADE;
+            meteorsGroup.createMultiple(30, IMAGE_SMALL_METEOR);
+            meteorsGroup.setAll('anchor.x', 0.5);
+            meteorsGroup.setAll('anchor.y', 1);
+            meteorsGroup.setAll('checkWorldBounds', true);
+            meteorsGroup.setAll('outOfBoundsKill', true);
+            meteorsGroup.setAll('body.bounce.x', 1);
+            meteorsGroup.setAll('body.bounce.y', 1);
+            meteorsGroup.setAll('body.minBounceVelocity', 0);
 
             //  The enemies
-            aliens = game.add.group();
-            aliens.enableBody = true;
-            aliens.physicsBodyType = Phaser.Physics.ARCADE;
+            aliensGroup = game.add.group();
+            aliensGroup.enableBody = true;
+            aliensGroup.physicsBodyType = Phaser.Physics.ARCADE;
             createAliens();
 
             // pickups pool
             pickupGroup = game.add.group();
-            pickupA = game.add.sprite(0, 0, IMAGE_POWERUP_A);
-            pickupA.anchor.setTo(0.5, 0.5);
-            pickupA.visible = false;
-            pickupB = game.add.sprite(0, 0, IMAGE_POWERUP_B);
-            pickupB.anchor.setTo(0.5, 0.5);
-            pickupB.visible = false;
 
             //  Explosion pool
-            explosions = game.add.group();
-            explosions.createMultiple(10, 'explosion');
-            explosions.forEach(setupInvader, this);
+            explosionsGroup = game.add.group();
+            explosionsGroup.createMultiple(10, 'explosion');
+            explosionsGroup.setAll('anchor.x', 0.5);
+            explosionsGroup.setAll('anchor.y', 0.5);
+            explosionsGroup.forEach(function(explosion) { explosion.animations.add('explosion'); }, this);
+
 
             //  Controls to play the game
             cursors = game.input.keyboard.createCursorKeys();
@@ -197,16 +194,16 @@
 
                 // //  Check collisions
                 game.physics.arcade.overlap(alienBulletsGroup, player, onAlienHitsPlayer, null, this);
-                game.physics.arcade.overlap(alienBulletsGroup, meteors, onAlienBulletsHitMeteors, null, this);
-                game.physics.arcade.overlap(meteors, player, onMeteorHitsPlayer, null, this);
-                game.physics.arcade.overlap(bullets, meteors, onPlayerBulletsHitMeteors, null, this);
-                game.physics.arcade.overlap(aliens, meteors, onMeteorHitsAlien, null, this);
+                game.physics.arcade.overlap(alienBulletsGroup, meteorsGroup, onAlienBulletsHitMeteors, null, this);
+                game.physics.arcade.overlap(meteorsGroup, player, onMeteorHitsPlayer, null, this);
+                game.physics.arcade.overlap(bulletsGroup, meteorsGroup, onPlayerBulletsHitMeteors, null, this);
+                game.physics.arcade.overlap(aliensGroup, meteorsGroup, onMeteorHitsAlien, null, this);
                 game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
 
                 // game.physics.overlap(mines, aliens, onPlayerMineHitsALien, null, this);                
                 // game.physics.overlap(alienBulletsGroup, meteors, onPlayerBulletsHitMeteors, null, this);
 
-                game.physics.arcade.collide(meteors);
+                // game.physics.arcade.collide(meteorsGroup);
             }
 
         }
@@ -267,21 +264,21 @@
             //     dropMine();
             // }
 
-            aliens.setAll('body.velocity.x', 0);
+            aliensGroup.setAll('body.velocity.x', 0);
             var atTheEdge = false;
             var velocity = 0;
 
             if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-                aliens.forEachAlive(function(child, index) {
-                    if ( (child.body.x + aliens.x) - 16 < 1) {
+                aliensGroup.forEachAlive(function(child, index) {
+                    if ( (child.body.x + aliensGroup.x) - 16 < 1) {
                         atTheEdge = true;
                     }
                 });
                 velocity = -200 * GAME_SPEED_QF;
                 
             } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-                aliens.forEachAlive(function(child, index) {
-                    if ( (child.body.x + aliens.x) + 16 > CANVAS_WIDTH - 1) {
+                aliensGroup.forEachAlive(function(child, index) {
+                    if ( (child.body.x + aliensGroup.x) + 16 > CANVAS_WIDTH - 1) {
                         atTheEdge = true;
                     }
                 });
@@ -289,7 +286,7 @@
             }
 
             if(!atTheEdge) {
-                aliens.setAll('body.velocity.x', velocity);
+                aliensGroup.setAll('body.velocity.x', velocity);
             }
 
             // Check if is firing
@@ -322,16 +319,16 @@
 
                 // game.debug.bodyInfo(player, 32, 320);
                 // game.debug.spriteBounds(player);
-                meteors.children.forEach(function(child, index) {
-                    if (index < 2 && child.alive) {
-                        game.debug.spriteBounds(child);
-                    }
-                });
-                aliens.children.forEach(function(child, index) {
-                    if (index < 5 && child.alive) {
-                        game.debug.spriteBounds(child);
-                    }
-                });
+                // meteorsGroup.children.forEach(function(child, index) {
+                //     if (index < 2 && child.alive) {
+                //         game.debug.spriteBounds(child);
+                //     }
+                // });
+                // aliensGroup.children.forEach(function(child, index) {
+                //     if (index < 5 && child.alive) {
+                //         game.debug.spriteBounds(child);
+                //     }
+                // });
             }
             
 
@@ -425,6 +422,22 @@
             }
         }
 
+        function maybeDropPickup(x, y) {
+
+            if(game.rnd.frac() <= PICKUP_DROP_CHANGE && gameState === GAMESTATE_PLAYING) {
+                var pickupType;
+                var random = game.rnd.frac();
+
+                if (random <= 0.5) {
+                    pickupType = IMAGE_POWERUP_A;
+                } else {
+                    pickupType = IMAGE_POWERUP_B;
+                }
+
+                dropPickup(x, y, pickupType);
+            }
+        }
+
         // ------------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------------
         //  
@@ -493,7 +506,7 @@
             enemyBullet = alienBulletsGroup.getFirstExists(false);
             livingEnemies.length = 0;
 
-            aliens.forEachAlive(function (alien) {
+            aliensGroup.forEachAlive(function (alien) {
                 livingEnemies.push(alien);
             });
 
@@ -501,8 +514,6 @@
                 var random = game.rnd.integerInRange(0, livingEnemies.length - 1);
 
                 var shooter = livingEnemies[random];
-                console.log(shooter.body.x);
-                console.log(shooter.body.y);
                 enemyBullet.reset(shooter.body.x, shooter.body.y);
 
                 game.physics.arcade.moveToObject(enemyBullet, player, 120);
@@ -513,7 +524,7 @@
         function sendMeteor () {
 
             var randomX = game.rnd.integerInRange(0, CANVAS_WIDTH);
-            meteor = meteors.getFirstExists(false);
+            meteor = meteorsGroup.getFirstExists(false);
 
             if (meteor) {
                 meteor.reset(randomX, -21);
@@ -524,23 +535,6 @@
                 meteorTimer = game.time.now + (400 / GAME_SPEED_QF);
             }
 
-        }
-
-        function maybeDropPickup(x, y) {
-
-
-            if(game.rnd.frac() <= PICKUP_DROP_CHANGE && gameState === GAMESTATE_PLAYING) {
-                var pickupType;
-                var random = game.rnd.frac();
-
-                if (random <= 0.5) {
-                    pickupType = IMAGE_POWERUP_A;
-                } else {
-                    pickupType = IMAGE_POWERUP_B;
-                }
-
-                dropPickup(x, y, pickupType);
-            }
         }
 
         function dropPickup(x, y, pickupType) {
@@ -556,26 +550,6 @@
 
         }
 
-        
-
-        
-
-        
-
-        
-
-
-
-        
-
-        function setupInvader (invader) {
-
-            invader.anchor.x = 0.5;
-            invader.anchor.y = 0.5;
-            invader.animations.add('explosion');
-
-        }
-
         function createAliens () {
 
             var NUM_COL = 5;
@@ -585,7 +559,7 @@
 
             for (var y = 0; y < 4; y++) {
                 for (var x = 0; x < NUM_COL; x++) {
-                        var alien = aliens.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + 16 + y * 50, IMAGE_ALIEN_SHIP);
+                        var alien = aliensGroup.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + 16 + y * 50, IMAGE_ALIEN_SHIP);
                     
                     alien.anchor.setTo(0.5, 0.5);
                     // alien.animations.add('fly', [0, 1, 2, 3], 20, true);
@@ -606,7 +580,7 @@
             //  To avoid them being allowed to fire too fast we set a time limit
             if (game.time.now > bulletTime && game.time.now > gunCooldown) {
                 //  Grab the first bullet we can from the pool
-                bullet = bullets.getFirstExists(false);
+                bullet = bulletsGroup.getFirstExists(false);
 
                 if (bullet) {
 
@@ -653,7 +627,7 @@
 
             // create an explosion
             // s_explosion.play();
-            var explosion = explosions.getFirstDead();
+            var explosion = explosionsGroup.getFirstDead();
             explosion.reset(x, y);
             explosion.play('explosion', 30, false, true);
 
