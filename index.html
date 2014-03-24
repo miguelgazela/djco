@@ -23,7 +23,15 @@
     <body>
 
     <script src="js/phaser.min.js"></script>
+    <script src="js/gyro.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+    <script>
+        gyro.startTracking(function(o) {
+            // o.x, o.y, o.z for accelerometer
+            // o.alpha, o.beta, o.gamma for gyro
+        });
+    </script>
 
     <script src="js/game_variables.js"></script>
 
