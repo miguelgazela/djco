@@ -430,8 +430,6 @@
 
             meteor.kill();
             createExplosion(player.body.x, player.body.y);
-
-            // decrease player's health
             damagePlayer(10);
         }
 
@@ -609,8 +607,8 @@
             astronaut = game.add.sprite(player.body.x, player.body.y, IMAGE_ASTRONAUT);
             game.physics.enable(astronaut, Phaser.Physics.ARCADE);
             astronaut.anchor.setTo(0.5, 0.5);
-            astronaut.body.velocity.x = game.rnd.integerInRange(-20, 20);
-            astronaut.body.velocity.y = game.rnd.integerInRange(-20, 20);
+            astronaut.body.velocity.x = (1 * (player.body.velocity.x / Math.abs(player.body.velocity.x))) * game.rnd.integerInRange(10, 30);
+            astronaut.body.velocity.y = (1 * (player.body.velocity.y / Math.abs(player.body.velocity.y))) * game.rnd.integerInRange(10, 30);
             astronaut.body.angularVelocity = 40;
 
             hudImgYouCallout.visible = true;
@@ -760,11 +758,11 @@
         }
 
         function updateDamageHealthBar(damage) {
-            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - (20 * 14.4) / 10, healthBar.height);
+            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - (damage * 14.4) / 10, healthBar.height);
         }
 
         function updateHealHealthBar() {
-            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width + 14.4, healthBar.height);
+            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, 144, healthBar.height);
         }
         
         function positionYouCalloutOnAstronaut() {
