@@ -51,7 +51,7 @@
             loadImage(IMAGE_ALIEN_BULLET);
             loadImage(IMAGE_MINE);
             loadImage(IMAGE_SMALL_METEOR);
-            loadImage(IMAGE_POWERUP_A);
+            loadImage(IMAGE_PICKUP_HEALTH);
             loadImage(IMAGE_POWERUP_SHIELD);
             loadImage(IMAGE_PICKUP_SHIELD);
             loadImage(IMAGE_ALIEN_SHIP);
@@ -185,6 +185,11 @@
             hudTxtPowerupShield.x = game.world.width / 2 - hudTxtPowerupShield.width / 2;
             hudTxtPowerupShield.y = game.world.height / 2 - hudTxtPowerupShield.height / 2;
             hudTxtPowerupShield.visible = false;
+
+            hudTxtPowerupRevive = game.add.text(0, 100, "HEALTH RESTORED", style);
+            hudTxtPowerupRevive.x = game.world.width / 2 - hudTxtPowerupRevive.width / 2;
+            hudTxtPowerupRevive.y = game.world.height / 2 - hudTxtPowerupRevive.height / 2;
+            hudTxtPowerupRevive.visible = false;
 
 
             for(var i = 0; i < numberMines; i++) {
@@ -438,12 +443,8 @@
         function onPickupOverlap (player, pickup) {
 
             switch(pickup.type) {
-                case "power_up_A":
-                    //hudTxtPowerupA.visible = true;
-                    healPlayer(10);
-
-                    //TODO start a countdown for the powerup duration, if that is the case
-                    //TODO do powerup action
+                case IMAGE_PICKUP_HEALTH:
+                    healPlayer(100);
                 break;
                 case IMAGE_PICKUP_SHIELD:
 
@@ -489,7 +490,7 @@
 
                 // update health HUD
                 hudTxtHealth.text = "Health: " + player.health;
-                updateDamageHealthBar();
+                updateDamageHealthBar(damage);
 
                 if (player.health !== 100) {
                     player.loadTexture(IMAGE_SHIP_DAMAGED);
@@ -504,11 +505,14 @@
         function showPowerupText(powerupType) {
 
             var powerupText;
-            var powerupTexts = [hudTxtPowerupShield];
+            var powerupTexts = [hudTxtPowerupShield, hudTxtPowerupRevive];
 
             switch (powerupType) {
                 case IMAGE_PICKUP_SHIELD:
                     powerupText = hudTxtPowerupShield;
+                break;
+                case IMAGE_PICKUP_HEALTH:
+                    powerupText = hudTxtPowerupRevive;
                 break;
             }
 
@@ -535,27 +539,19 @@
             game.time.events.remove(powerupShieldTimer);
         }
 
-        /* TODO RC */
         function healPlayer(health) {
 
-            if(player.health < 100) { // if the player has taken some damage
+            if (player.health < 100) {
+                player.health = Math.min(100, player.health + health);
 
-                if(player.health + health >= 100)  // if the healing is more then enough to fully restore the ship
-                    player.health = 100;
-                else player.health += health; 
-
-                if(player.health === 100) { //if the player is restored to max health, restore the good ship texture
+                if(player.health === 100) {  // if the player is restored to max health, restore the good ship texture
                     player.loadTexture(IMAGE_SHIP);
                 }
 
                 // update health HUD
                 hudTxtHealth.text = "Health: " + player.health;
                 updateHealHealthBar();
-
-                if (!player.alive) {
-                   playerOneDied();
-                }
-            }   
+            }
         }
 
         function maybeDropPickup(x, y) {
@@ -565,7 +561,7 @@
                 var random = game.rnd.frac();
 
                 if (random <= 0.5) {
-                    pickupType = IMAGE_POWERUP_A;
+                    pickupType = IMAGE_PICKUP_HEALTH;
                 } else {
                     pickupType = IMAGE_PICKUP_SHIELD;
                 }
@@ -712,16 +708,8 @@
                         var alien = aliensGroup.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + 16 + y * 50, IMAGE_ALIEN_SHIP);
                     
                     alien.anchor.setTo(0.5, 0.5);
-                    // alien.animations.add('fly', [0, 1, 2, 3], 20, true);
-                    // alien.play('fly');
                 }
             }
-
-            // aliens.x = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
-            // aliens.y = CANVAS_HEIGHT - 200;
-
-            // var tween = game.add.tween(aliens).to( {x: 130}, 1000, Phaser.Easing.Linear.None, true, 0, 1000, true);
-            // tween.onComplete.add(function () { aliens.y += 10; }, this);
 
         }
 
@@ -771,18 +759,12 @@
             gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6 * GAME_SPEED_QF);
         }
 
-        function updateDamageHealthBar () {
-            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - 14.4, healthBar.height);
+        function updateDamageHealthBar(damage) {
+            healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - (20 * 14.4) / 10, healthBar.height);
         }
 
-        /* TODO RC */
-        function updateHealHealthBar () {
-
+        function updateHealHealthBar() {
             healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width + 14.4, healthBar.height);
-        }
-
-        function removePowerupShield() {
-            powerupShield.visible = false;
         }
         
         function positionYouCalloutOnAstronaut() {
@@ -797,6 +779,10 @@
             explosion.reset(x, y);
             explosion.play('explosion', 30, false, true);
 
+        }
+
+        function removePowerupShield() {
+            powerupShield.visible = false;
         }
 
         function loadImage(image) {
