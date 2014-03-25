@@ -39,6 +39,7 @@ var mineTime = 0;
 var firingTimer = 0;
 var meteorTimer = 0;
 var gunCooldown = 0;
+var powerupShieldTimer;
 
 // control keys
 var cursors;
@@ -53,6 +54,7 @@ var s_explosion;
 var hudTxtScore;
 var hudTxtHealth;
 var hudTxtMines;
+var hudTxtPowerupShield;
 var hudImgLogo;
 var hudBtnPlay;
 var hudBtnPlayAgain;
@@ -73,6 +75,7 @@ var CANVAS_HEIGHT = $(window).height();
 var GAME_SPEED_QF = 1;
 var PICKUP_DROP_CHANGE = 0.2;
 var PICKUP_DESPAWN_RATE = 7;
+var PICKUP_DURATION_TIME = 5;
 
 var PLAYER_SHIP_WIDTH = 33;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
