@@ -6,6 +6,10 @@ var playedOnce = false;
 var numberMines = 3;
 var astronaut;
 
+// POWERUPS
+var powerupShield;
+var powerupTweenShield;
+
 // IMAGES
 var IMAGE_LOGO = "logo";
 var IMAGE_ASTRONAUT = "astronaut";
@@ -17,7 +21,8 @@ var IMAGE_ALIEN_BULLET = "alien_bullet";
 var IMAGE_MINE = "mine";
 var IMAGE_SMALL_METEOR = "small_meteor";
 var IMAGE_POWERUP_A = "power_up_A";
-var IMAGE_POWERUP_B = "power_up_B";
+var IMAGE_PICKUP_SHIELD = "pickupShield";
+var IMAGE_POWERUP_SHIELD = "powerupShield";
 var IMAGE_BTN_PLAY = "btnPlay";
 var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
 var IMAGE_ALIEN_SHIP = "alien_ship";

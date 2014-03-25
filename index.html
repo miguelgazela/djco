@@ -52,7 +52,8 @@
             loadImage(IMAGE_MINE);
             loadImage(IMAGE_SMALL_METEOR);
             loadImage(IMAGE_POWERUP_A);
-            loadImage(IMAGE_POWERUP_B);
+            loadImage(IMAGE_POWERUP_SHIELD);
+            loadImage(IMAGE_PICKUP_SHIELD);
             loadImage(IMAGE_ALIEN_SHIP);
             loadImage(IMAGE_ASTRONAUT);
             loadImage(IMAGE_YOU_CALLOUT);
@@ -147,9 +148,12 @@
 
             // pickups pool
             pickupGroup = game.add.group();
-            /* TODO RC */
             pickupGroup.enableBody = true;
             pickupGroup.physicsBodyType = Phaser.Physics.ARCADE;
+
+            powerupShield = game.add.sprite(0, 0, IMAGE_POWERUP_SHIELD);
+            powerupShield.anchor.setTo(0.5, 0.5);
+            powerupShield.visible = false;
 
             //  Explosion pool
             explosionsGroup = game.add.group();
@@ -179,6 +183,7 @@
             style = { font: "28px Arial", fill: "#ffffff", align: "center" };
             hudTxtPowerupShield = game.add.text(0, 100, "SHIELD ACTIVATED", style);
             hudTxtPowerupShield.x = game.world.width / 2 - hudTxtPowerupShield.width / 2;
+            hudTxtPowerupShield.y = game.world.height / 2 - hudTxtPowerupShield.height / 2;
             hudTxtPowerupShield.visible = false;
 
 
@@ -217,6 +222,11 @@
                 if (game.time.now > meteorTimer) {
                     sendMeteor();
                 }
+
+                // update the positio of the shield
+                powerupShield.x = player.body.x;
+                powerupShield.y = player.body.y;
+                powerupShield.angle = player.body.angle;
 
                 // //  Check collisions
                 game.physics.arcade.overlap(alienBulletsGroup, player, onAlienHitsPlayer, null, this);
@@ -435,13 +445,19 @@
                     //TODO start a countdown for the powerup duration, if that is the case
                     //TODO do powerup action
                 break;
-                case IMAGE_POWERUP_B:
+                case IMAGE_PICKUP_SHIELD:
+
+                    if (powerupTweenShield != null) {
+                        powerupTweenShield.stop();
+                    }
+
                     if (powerupShieldTimer != null) {
                         game.time.events.remove(powerupShieldTimer);
                     }
+
                     powerupShieldTimer = game.time.events.add(Phaser.Timer.SECOND * PICKUP_DURATION_TIME, powerupExpiredShield, this);
-                    // powerupShield.visible = true;
-                    // powerupShild.alpha = 1;
+                    powerupShield.visible = true;
+                    powerupShield.alpha = 1;
                 break;
                 default: //unexpected stuff happened
             }
@@ -468,18 +484,20 @@
 
         function damagePlayer(damage) {
 
-            if(player.health === 100) {
-                player.loadTexture(IMAGE_SHIP_DAMAGED);
-            }
+            if (!powerupShield.visible) {
+                player.damage(damage);
 
-            player.damage(damage);
+                // update health HUD
+                hudTxtHealth.text = "Health: " + player.health;
+                updateDamageHealthBar();
 
-            // update health HUD
-            hudTxtHealth.text = "Health: " + player.health;
-            updateDamageHealthBar();
+                if (player.health !== 100) {
+                    player.loadTexture(IMAGE_SHIP_DAMAGED);
+                }
 
-            if (!player.alive) {
-               playerOneDied();
+                if (!player.alive) {
+                 playerOneDied();
+                }
             }
         }
 
@@ -489,7 +507,7 @@
             var powerupTexts = [hudTxtPowerupShield];
 
             switch (powerupType) {
-                case IMAGE_POWERUP_B:
+                case IMAGE_PICKUP_SHIELD:
                     powerupText = hudTxtPowerupShield;
                 break;
             }
@@ -508,7 +526,12 @@
         }
 
         function powerupExpiredShield() {
-
+            if (powerupTweenShield != null) {
+                powerupTweenShield.stop();
+            }
+            powerupShield.alpha = 1;
+            powerupTweenShield = game.add.tween(powerupShield).to({alpha: 0}, 500, Phaser.Easing.Linear.None, true, 0, 0, false);
+            powerupTweenShield.onComplete.add(removePowerupShield);
             game.time.events.remove(powerupShieldTimer);
         }
 
@@ -544,7 +567,7 @@
                 if (random <= 0.5) {
                     pickupType = IMAGE_POWERUP_A;
                 } else {
-                    pickupType = IMAGE_POWERUP_B;
+                    pickupType = IMAGE_PICKUP_SHIELD;
                 }
 
                 dropPickup(x, y, pickupType);
@@ -758,8 +781,10 @@
             healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width + 14.4, healthBar.height);
         }
 
+        function removePowerupShield() {
+            powerupShield.visible = false;
+        }
         
-
         function positionYouCalloutOnAstronaut() {
             hudImgYouCallout.x = astronaut.x;
             hudImgYouCallout.y = astronaut.y - 20;
