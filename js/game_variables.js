@@ -71,7 +71,7 @@ var hudBtnPlay;
 var hudBtnPlayAgain;
 var hudImgYouCallout;
 
-var healthBar;
+var graphics;
 var gunHeatBackgroundBar;
 var gunHeatBar;
 
@@ -91,6 +91,7 @@ var PICKUP_DESPAWN_RATE = 7;
 var PICKUP_DURATION_TIME = 8;
 
 var PLAYER_SHIP_WIDTH = 33;
+var PLAYER_SHIP_HEIGHT = 25;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
 var ALIEN_SHIP_WIDTH = 32;
 var PLAYER_BULLET_HEIGHT = 36;

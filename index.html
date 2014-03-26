@@ -37,7 +37,7 @@
 
     <script type="text/javascript">
 
-    var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.AUTO, 'FEUP Invaders');
+    var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.CANVAS, 'FEUP Invaders');
 
     var gameState = {
 
@@ -177,8 +177,9 @@
             hudTxtMines.visible = false;
 
             graphics = game.add.graphics(0, 0);
+            graphics.update = updateGraphics;
 
-            healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
+            // healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
             gunHeatBackgroundBar = new Phaser.Rectangle(GUN_HEAT_BAR_BG_X, GUN_HEAT_BAR_BG_Y, 102, 10);
             gunHeatBar = new Phaser.Rectangle(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, 6, 6);
 
@@ -226,9 +227,12 @@
                     sendMeteor();
                 }
 
+                graphics.clear();
+                graphics.update();
+
                 // update the positio of the shield
-                powerupShield.x = player.body.x;
-                powerupShield.y = player.body.y;
+                powerupShield.x = player.body.x + PLAYER_SHIP_WIDTH / 2;
+                powerupShield.y = player.body.y + PLAYER_SHIP_HEIGHT / 2;
                 powerupShield.angle = player.body.angle;
 
                 // //  Check collisions
@@ -254,14 +258,6 @@
         render: function() {
 
             if (gameState == GAMESTATE_PLAYING) {
-                var healthBarColor = "#2ecc71";
-                if (player.health < 30) {
-                    healthBarColor = "#c0392b";
-                } else if (player.health < 75) {
-                    healthBarColor = "#f1c40f";
-                }
-
-                game.debug.geom(healthBar, healthBarColor);
 
                 var gunHeatBarColor = "#2ecc71";
                 if ( gunHeat > 80 ) {
@@ -272,7 +268,7 @@
                 game.debug.geom(gunHeatBackgroundBar, "#ddd");
                 game.debug.geom(gunHeatBar, gunHeatBarColor);
 
-                // game.debug.bodyInfo(player, 32, 320);
+                //game.debug.bodyInfo(player, 32, 320);
                 // game.debug.spriteBounds(player);
                 // meteorsGroup.children.forEach(function(child, index) {
                 //     if (index < 2 && child.alive) {
@@ -382,6 +378,24 @@
 
         if(aliensFireButton.isDown) {
             alienFire();
+        }
+
+    }
+
+    function updateGraphics() {
+
+        if (gameState == GAMESTATE_PLAYING) {
+
+            var healthBarColor = 0x2ECC71;
+            
+            if (player.health < 30) {
+                healthBarColor = 0xc0392b;
+            } else if (player.health < 75) {
+                healthBarColor = 0xf1c40f;
+            }
+
+            graphics.beginFill(healthBarColor);
+            graphics.drawRect(HEALTH_BAR_X, HEALTH_BAR_Y, player.health * 1.4, 10);
         }
 
     }
@@ -510,17 +524,15 @@
         if (!powerupShield.visible) {
             player.damage(damage);
 
-            // update health HUD
-            hudTxtHealth.text = "Health: " + player.health;
-            updateDamageHealthBar(damage);
-
             if (player.health !== 100) {
                 player.loadTexture(IMAGE_SHIP_DAMAGED);
+
+                if (!player.alive) {
+                    playerOneDied();
+                }
             }
 
-            if (!player.alive) {
-             playerOneDied();
-            }
+            hudTxtHealth.text = "Health: " + player.health;
         }
     }
 
@@ -572,7 +584,6 @@
 
             // update health HUD
             hudTxtHealth.text = "Health: " + player.health;
-            updateHealHealthBar();
         }
     }
 
@@ -783,14 +794,6 @@
 
     function updateHeatBar () {
         gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6 * GAME_SPEED_QF);
-    }
-
-    function updateDamageHealthBar(damage) {
-        healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, healthBar.width - (damage * 14.4) / 10, healthBar.height);
-    }
-
-    function updateHealHealthBar() {
-        healthBar.setTo(HEALTH_BAR_X, HEALTH_BAR_Y, 144, healthBar.height);
     }
     
     function positionYouCalloutOnAstronaut() {
