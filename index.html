@@ -485,7 +485,7 @@
             createExplosion(bullet.body.x, bullet.body.y - bullet.height);
             maybeDropPickup(meteor.body.x, meteor.body.y);
 
-            var debrisQuantity = game.rnd.integerInRange(4, 6);
+            var debrisQuantity = 3;
             for (var i = 0; i < debrisQuantity; i++) {
                 var debris = debrisGroup.create(0, 0, IMAGE_DEBRIS[game.rnd.integerInRange(0, IMAGE_DEBRIS.length)]);
 
