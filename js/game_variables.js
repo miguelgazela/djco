@@ -72,9 +72,6 @@ var hudBtnPlayAgain;
 var hudImgYouCallout;
 
 var graphics;
-var gunHeatBackgroundBar;
-var gunHeatBar;
-
 var starfield;
 var backgroundScrollSpeed = 2;
 var speedInc = 0.0005;

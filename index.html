@@ -179,10 +179,6 @@
             graphics = game.add.graphics(0, 0);
             graphics.update = updateGraphics;
 
-            // healthBar = new Phaser.Rectangle(HEALTH_BAR_X, HEALTH_BAR_Y, 144, 10);
-            gunHeatBackgroundBar = new Phaser.Rectangle(GUN_HEAT_BAR_BG_X, GUN_HEAT_BAR_BG_Y, 102, 10);
-            gunHeatBar = new Phaser.Rectangle(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, 6, 6);
-
             for(var i = 0; i < numberMines; i++) {
                 var mine = minesGroup.create(110 + i * 20, 53, IMAGE_MINE);
                 mine.anchor.setTo(0.5, 0.5);
@@ -221,7 +217,6 @@
 
                 // decrease gun heat
                 gunHeat = Math.max(6, gunHeat - (0.4 * GAME_SPEED_QF));
-                updateHeatBar();
 
                 if (game.time.now > meteorTimer) {
                     sendMeteor();
@@ -258,15 +253,6 @@
         render: function() {
 
             if (gameState == GAMESTATE_PLAYING) {
-
-                var gunHeatBarColor = "#2ecc71";
-                if ( gunHeat > 80 ) {
-                    gunHeatBarColor = "#c0392b";
-                } else if ( gunHeat > 40 ) {
-                    gunHeatBarColor = "#f1c40f";
-                }
-                game.debug.geom(gunHeatBackgroundBar, "#ddd");
-                game.debug.geom(gunHeatBar, gunHeatBarColor);
 
                 //game.debug.bodyInfo(player, 32, 320);
                 // game.debug.spriteBounds(player);
@@ -396,6 +382,20 @@
 
             graphics.beginFill(healthBarColor);
             graphics.drawRect(HEALTH_BAR_X, HEALTH_BAR_Y, player.health * 1.4, 10);
+
+            // draw the gun heat bar
+            graphics.beginFill(0xDDDDDD);
+            graphics.drawRect(GUN_HEAT_BAR_BG_X, GUN_HEAT_BAR_BG_Y, 102, 10);
+
+            var gunHeatBarColor = 0x2ecc71;
+            if ( gunHeat > 80 ) {
+                gunHeatBarColor = 0xc0392b;
+            } else if ( gunHeat > 40 ) {
+                gunHeatBarColor = 0xf1c40f;
+            }
+
+            graphics.beginFill(gunHeatBarColor);
+            graphics.drawRect(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6);
         }
 
     }
@@ -767,7 +767,6 @@
 
                 // add heat to gun
                 gunHeat = Math.min(gunHeat + 15, 100);
-                updateHeatBar();
                 if (gunHeat === 100) {
                     gunCooldown = game.time.now + (3000 * GAME_SPEED_QF); // if weapons gets too hot, needs to wait 3 seconds
                 }
@@ -790,10 +789,6 @@
             }
         }
 
-    }
-
-    function updateHeatBar () {
-        gunHeatBar.setTo(GUN_HEAT_BAR_X, GUN_HEAT_BAR_Y, gunHeat, 6 * GAME_SPEED_QF);
     }
     
     function positionYouCalloutOnAstronaut() {
