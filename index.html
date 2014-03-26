@@ -57,7 +57,7 @@
             loadImage(IMAGE_ALIEN_SHIP);
             loadImage(IMAGE_ASTRONAUT);
             loadImage(IMAGE_YOU_CALLOUT);
-
+            loadArrayImages(IMAGE_DEBRIS);
 
             // game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
@@ -139,6 +139,11 @@
             meteorsGroup.setAll('body.bounce.x', 1);
             meteorsGroup.setAll('body.bounce.y', 1);
             meteorsGroup.setAll('body.minBounceVelocity', 0);
+
+            // group of meteor debris
+            debrisGroup = game.add.group();
+            debrisGroup.enableBody = true;
+            debrisGroup.physicsBodyType = Phaser.Physics.ARCADE;
 
             //  The enemies
             aliensGroup = game.add.group();
@@ -479,6 +484,26 @@
 
             createExplosion(bullet.body.x, bullet.body.y - bullet.height);
             maybeDropPickup(meteor.body.x, meteor.body.y);
+
+            var debrisQuantity = 3;
+            for (var i = 0; i < debrisQuantity; i++) {
+                var debris = debrisGroup.create(0, 0, IMAGE_DEBRIS[game.rnd.integerInRange(0, IMAGE_DEBRIS.length)]);
+
+                debris.anchor.setTo(0.5, 0.5);
+                debris.reset(
+                    game.rnd.integerInRange(
+                        meteor.body.x - 10,
+                        meteor.body.x + 10
+                    ),
+                    game.rnd.integerInRange(
+                        meteor.body.y - 10,
+                        meteor.body.y + 10
+                    )
+                );
+
+                debris.body.velocity.x = game.rnd.integerInRange(-100, 100);
+                debris.body.velocity.y = game.rnd.integerInRange(-100, 100);
+            }
         }
 
         function damagePlayer(damage) {
@@ -785,6 +810,12 @@
 
         function loadImage(image) {
             game.load.image(image, 'assets/' + image + '.png');
+        }
+
+        function loadArrayImages(imageArray) {
+            for (var i = 0; i < imageArray.length; i++) {
+                loadImage(imageArray[i]);
+            }
         }
 
     };

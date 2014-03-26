@@ -27,6 +27,11 @@ var IMAGE_BTN_PLAY = "btnPlay";
 var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
 var IMAGE_ALIEN_SHIP = "alien_ship";
 var IMAGE_YOU_CALLOUT = "youCallout";
+var IMAGE_DEBRIS1 = "debris1";
+var IMAGE_DEBRIS2 = "debris2";
+var IMAGE_DEBRIS3 = "debris3";
+
+var IMAGE_DEBRIS = [IMAGE_DEBRIS1, IMAGE_DEBRIS2, IMAGE_DEBRIS3];
 
 // groups
 var aliensGroup;
@@ -77,6 +82,8 @@ var speedInc = 0.0005;
 // constants
 var CANVAS_WIDTH = 960;
 var CANVAS_HEIGHT = $(window).height();
+var METEOR_WIDTH = 44;
+var METEOR_HEIGHT = 42;
 
 var GAME_SPEED_QF = 1;
 var PICKUP_DROP_CHANGE = 0.2;
