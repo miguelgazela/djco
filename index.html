@@ -203,6 +203,10 @@
             s_explosion = game.add.audio('s_explosion');
 
             gameState = GAMESTATE_NOTSTARTED;
+
+            if(playedOnce) {
+                onBtnPlay();
+            }
         },
 
         update: function() {
@@ -641,7 +645,8 @@
 
         hudTxtScore.visible = false;
         hudTxtHealth.visible = false;
-        playedOnce = true;
+        hudTxtMines.visible = false;
+        minesGroup.setAll('visible', false);
 
         astronaut = game.add.sprite(player.body.x, player.body.y, IMAGE_ASTRONAUT);
         game.physics.enable(astronaut, Phaser.Physics.ARCADE);
@@ -656,6 +661,8 @@
         game.time.events.add(Phaser.Timer.SECOND * 3, gameOver, this);
 
         gameState = GAMESTATE_DIED;
+        playedOnce = true;
+        graphics.clear();
     }
 
     function gameOver() {
