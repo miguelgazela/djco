@@ -1,9 +1,11 @@
 var player;
 var score = 0;
 var gunHeat = 6;
-var timeAlive = 0;
+var timeAlive;
 var playedOnce = false;
 var numberMines = 3;
+var firedLasers;
+var meteorHits;
 var astronaut;
 
 // POWERUPS
@@ -69,6 +71,7 @@ var hudTxtPowerupRevive;
 var hudImgLogo;
 var hudBtnPlay;
 var hudBtnPlayAgain;
+var hudTxtGameOver;
 var hudImgYouCallout;
 
 var graphics;

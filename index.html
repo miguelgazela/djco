@@ -84,6 +84,7 @@
 
             hudBtnPlayAgain = game.add.button(0, 300, IMAGE_BTN_PLAY_AGAIN, onBtnPlayAgain, this, 1, 0, 1);
             hudBtnPlayAgain.x = game.world.width / 2 - hudBtnPlayAgain.width / 2;
+            hudBtnPlayAgain.y = game.world.height / 2 - hudBtnPlayAgain.height / 2;
             hudBtnPlayAgain.visible = false;
             hudBtnPlayAgain.active = false;
 
@@ -176,6 +177,10 @@
             hudTxtMines = game.add.text(10, 36, "Mines: ", {fontSize: '26px', fill: '#e9e9e9'});
             hudTxtMines.visible = false;
 
+            hudTxtGameOver = game.add.text(0, 90, "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.", {fontSize: "26px", fill: "#e9e9e9", align: "center"});
+            hudTxtGameOver.x = game.world.width / 2 - hudTxtGameOver.width / 2;
+            hudTxtGameOver.visible = false;
+
             graphics = game.add.graphics(0, 0);
             graphics.update = updateGraphics;
 
@@ -203,6 +208,10 @@
             s_explosion = game.add.audio('s_explosion');
 
             gameState = GAMESTATE_NOTSTARTED;
+            timeAlive = 0;
+            score = 0;
+            firedLasers = 0;
+            meteorHits = 0;
 
             if(playedOnce) {
                 onBtnPlay();
@@ -229,7 +238,9 @@
                 graphics.clear();
                 graphics.update();
 
-                // update the positio of the shield
+                timeAlive += (game.time.elapsed / 1000);
+
+                // update the position of the shield
                 powerupShield.x = player.body.x + PLAYER_SHIP_WIDTH / 2;
                 powerupShield.y = player.body.y + PLAYER_SHIP_HEIGHT / 2;
                 powerupShield.angle = player.body.angle;
@@ -416,6 +427,7 @@
     function onPlayerBulletsHitMeteors (bullet, meteor) {
 
         bulletHitsMeteor(bullet, meteor);
+        meteorHits += 1;
 
         // update player score
         score += 5;
@@ -669,10 +681,17 @@
         hudBtnPlayAgain.alpha = 0;
         hudBtnPlayAgain.visible = true;
 
-        var tweenB = game.add.tween(hudBtnPlayAgain).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
-        tweenB.onComplete.add(function() {
-            hudBtnPlayAgain.active = true;
-        })
+        hudTxtGameOver.text = "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.\nYou fired "+firedLasers+ " lasers.\nYou hit "+meteorHits+" meteors.\nLaser accuracy of "+laserAccuracy()+"%.";
+        hudTxtGameOver.visible = true;
+        hudTxtGameOver.alpha = 0;
+
+        var tweenA = game.add.tween(hudTxtGameOver).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+        tweenA.onComplete.add(function() {
+            var tweenB = game.add.tween(hudBtnPlayAgain).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+            tweenB.onComplete.add(function() {
+                hudBtnPlayAgain.active = true;
+            });
+        });
 
         gameState = GAMESTATE_GAMEOVER;
     }
@@ -771,6 +790,7 @@
                 bullet.body.velocity.y = -400 * GAME_SPEED_QF;
                 bulletTime = game.time.now + (200 / GAME_SPEED_QF);
                 // s_laser.play();
+                firedLasers += 1;
 
                 // add heat to gun
                 gunHeat = Math.min(gunHeat + 15, 100);
@@ -805,6 +825,10 @@
 
     function roundTimeAlive() {
         return Phaser.Math.floor(timeAlive * 100) / 100;
+    }
+
+    function laserAccuracy() {
+        return Phaser.Math.roundTo((meteorHits/firedLasers)*100, -2);
     }
 
     function createExplosion(x, y) {
