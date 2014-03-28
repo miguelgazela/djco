@@ -53,7 +53,6 @@
             loadImage(IMAGE_YOU_CALLOUT);
             loadArrayImages(IMAGE_DEBRIS);
 
-            // game.load.spritesheet('invader', 'assets/invader32x32x4.png', 32, 32);
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
             game.load.spritesheet(IMAGE_BTN_PLAY, 'assets/' + IMAGE_BTN_PLAY + '.png', 170, 76);
             game.load.spritesheet(IMAGE_BTN_PLAY_AGAIN, 'assets/' + IMAGE_BTN_PLAY_AGAIN + '.png', 170, 76);
@@ -97,36 +96,28 @@
             bulletsGroup = game.add.group();
             setPhysicsBody(bulletsGroup, Phaser.Physics.ARCADE);
             bulletsGroup.createMultiple(30, IMAGE_P1_BULLET);
-            bulletsGroup.setAll('checkWorldBounds', true);
-            bulletsGroup.setAll('outOfBoundsKill', true);
-            bulletsGroup.setAll('anchor.x', 0.5);
-            bulletsGroup.setAll('anchor.y', 1);
+            configureGroup(bulletsGroup, 0.5, 1);
 
             //  The enemy's bullets
             alienBulletsGroup = game.add.group();
             setPhysicsBody(alienBulletsGroup, Phaser.Physics.ARCADE);
             alienBulletsGroup.createMultiple(15, IMAGE_ALIEN_BULLET);
-            alienBulletsGroup.setAll('anchor.x', 0.5);
-            alienBulletsGroup.setAll('anchor.y', 1);
-            alienBulletsGroup.setAll('checkWorldBounds', true);
-            alienBulletsGroup.setAll('outOfBoundsKill', true);
+            configureGroup(alienBulletsGroup, 0.5, 1);
 
-            //  Our mines group
+            //  Our deployed mines group
+            deployedMinesGroup = game.add.group();
+            setPhysicsBody(deployedMinesGroup, Phaser.Physics.ARCADE);
+            configureGroup(deployedMinesGroup);
+
+            // mines
             minesGroup = game.add.group();
             setPhysicsBody(minesGroup, Phaser.Physics.ARCADE);
-            minesGroup.setAll('anchor.x', 0.5);
-            minesGroup.setAll('anchor.y', 0.5);
-            minesGroup.setAll('checkWorldBounds', true);
-            minesGroup.setAll('outOfBoundsKill', true);
 
             //  group of meteors
             meteorsGroup = game.add.group();
             setPhysicsBody(meteorsGroup, Phaser.Physics.ARCADE);
             meteorsGroup.createMultiple(30, IMAGE_SMALL_METEOR);
-            meteorsGroup.setAll('anchor.x', 0.5);
-            meteorsGroup.setAll('anchor.y', 1);
-            meteorsGroup.setAll('checkWorldBounds', true);
-            meteorsGroup.setAll('outOfBoundsKill', true);
+            configureGroup(meteorsGroup);
             meteorsGroup.setAll('body.bounce.x', 1);
             meteorsGroup.setAll('body.bounce.y', 1);
             meteorsGroup.setAll('body.minBounceVelocity', 0);
@@ -201,6 +192,11 @@
             hudTxtPowerupRevive.y = game.world.height / 2 - hudTxtPowerupRevive.height / 2;
             hudTxtPowerupRevive.visible = false;
 
+            hudTxtPowerupMine = game.add.text(0, 100, "PICKED UP MINE", style);
+            hudTxtPowerupMine.x = game.world.width / 2 - hudTxtPowerupMine.width / 2;
+            hudTxtPowerupMine.y = game.world.height / 2 - hudTxtPowerupMine.height / 2;
+            hudTxtPowerupMine.visible = false;
+
             // sounds
             s_laser = game.add.audio('s_laser');
             s_explosion = game.add.audio('s_explosion');
@@ -250,7 +246,7 @@
                 game.physics.arcade.overlap(bulletsGroup, meteorsGroup, onPlayerBulletsHitMeteors, null, this);
                 game.physics.arcade.overlap(aliensGroup, meteorsGroup, onMeteorHitsAlien, null, this);
                 game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
-                game.physics.arcade.overlap(minesGroup, aliensGroup, onMineHitsAlien, null, this);
+                game.physics.arcade.overlap(deployedMinesGroup, aliensGroup, onMineHitsAlien, null, this);
 
                 // game.physics.overlap(alienBulletsGroup, meteors, onPlayerBulletsHitMeteors, null, this);
 
@@ -490,6 +486,16 @@
                 powerupShield.visible = true;
                 powerupShield.alpha = 1;
             break;
+            case IMAGE_PICKUP_MINE:
+
+                if (numberMines < 3) {
+                    var mine = minesGroup.create(110 + numberMines * 20, 53, IMAGE_MINE);
+                    mine.anchor.setTo(0.5, 0.5);
+                    mine.alpha = 0.7;
+                }
+                numberMines = Phaser.Math.min(3, numberMines + 1);
+                
+            break;
             default: //unexpected stuff happened
         }
 
@@ -553,7 +559,7 @@
     function showPowerupText(powerupType) {
 
         var powerupText;
-        var powerupTexts = [hudTxtPowerupShield, hudTxtPowerupRevive];
+        var powerupTexts = [hudTxtPowerupShield, hudTxtPowerupRevive, hudTxtPowerupMine];
 
         switch (powerupType) {
             case IMAGE_PICKUP_SHIELD:
@@ -562,6 +568,10 @@
             case IMAGE_PICKUP_HEALTH:
                 powerupText = hudTxtPowerupRevive;
             break;
+            case IMAGE_PICKUP_MINE:
+                powerupText = hudTxtPowerupMine;
+            break;
+            default:
         }
 
         for (var i = 0; i < powerupTexts.length; i++) {
@@ -608,9 +618,11 @@
             var random = game.rnd.frac();
 
             if (random <= 0.5) {
-                pickupType = IMAGE_PICKUP_HEALTH;
-            } else {
+                pickupType = IMAGE_PICKUP_MINE;
+            } else if (random <= 0.75) {
                 pickupType = IMAGE_PICKUP_SHIELD;
+            } else {
+                pickupType = IMAGE_PICKUP_HEALTH;
             }
 
             dropPickup(x, y, pickupType);
@@ -656,7 +668,7 @@
         hudTxtScore.visible = false;
         hudTxtHealth.visible = false;
         hudTxtMines.visible = false;
-        minesGroup.setAll('visible', false);
+        // minesGroup.setAll('visible', false);
 
         astronaut = game.add.sprite(player.body.x, player.body.y, IMAGE_ASTRONAUT);
         game.physics.enable(astronaut, Phaser.Physics.ARCADE);
@@ -691,6 +703,8 @@
             });
         });
 
+        minesGroup.removeAll();
+        deployedMinesGroup.removeAll();
         gameState = GAMESTATE_GAMEOVER;
     }
 
@@ -812,10 +826,11 @@
 
         if (game.time.now > mineTime && numberMines > 0) {
 
-            mine = minesGroup.getAt(numberMines - 1);
+            var mine = deployedMinesGroup.create(0, 0, IMAGE_MINE);
 
             if (mine) {
                 numberMines -= 1;
+                minesGroup.remove(minesGroup.getTop());
                 mine.reset(player.x, player.y + 12);
                 mine.body.velocity.y = 100;
                 mineTime = game.time.now + (400 / GAME_SPEED_QF);
@@ -863,6 +878,13 @@
         for (var i = 0; i < imageArray.length; i++) {
             loadImage(imageArray[i]);
         }
+    }
+
+    function configureGroup(group, anchorX, anchorY) {
+        group.setAll('checkWorldBounds', true);
+        group.setAll('outOfBoundsKill', true);
+        group.setAll('anchor.x', (anchorX || 0.5));
+        group.setAll('anchor.y', (anchorY || 0.5));
     }
 
     </script>
