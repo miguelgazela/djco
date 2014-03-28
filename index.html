@@ -23,15 +23,8 @@
     <body>
 
     <script src="js/phaser.min.js"></script>
-    <script src="js/gyro.min.js"></script>
+    <script src="js/modernizr.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-
-    <script>
-        gyro.startTracking(function(o) {
-            // o.x, o.y, o.z for accelerometer
-            // o.alpha, o.beta, o.gamma for gyro
-        });
-    </script>
 
     <script src="js/game_variables.js"></script>
 
@@ -52,8 +45,9 @@
             loadImage(IMAGE_MINE);
             loadImage(IMAGE_SMALL_METEOR);
             loadImage(IMAGE_PICKUP_HEALTH);
-            loadImage(IMAGE_POWERUP_SHIELD);
             loadImage(IMAGE_PICKUP_SHIELD);
+            loadImage(IMAGE_PICKUP_MINE);
+            loadImage(IMAGE_POWERUP_SHIELD);
             loadImage(IMAGE_ALIEN_SHIP);
             loadImage(IMAGE_ASTRONAUT);
             loadImage(IMAGE_YOU_CALLOUT);
@@ -180,6 +174,10 @@
             hudTxtGameOver = game.add.text(0, 90, "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.", {fontSize: "26px", fill: "#e9e9e9", align: "center"});
             hudTxtGameOver.x = game.world.width / 2 - hudTxtGameOver.width / 2;
             hudTxtGameOver.visible = false;
+
+            hudTxtOverheatGun = game.add.text(0, 90, "LASER HAS OVERHEATED", style);
+            hudTxtOverheatGun.x = game.world.width / 2 - hudTxtOverheatGun.width / 2;
+            hudTxtOverheatGun.visible = false;
 
             graphics = game.add.graphics(0, 0);
             graphics.update = updateGraphics;
@@ -771,6 +769,7 @@
                     var alien = aliensGroup.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + 16 + y * 50, IMAGE_ALIEN_SHIP);
                 
                 alien.anchor.setTo(0.5, 0.5);
+ 
             }
         }
 
@@ -796,6 +795,13 @@
                 gunHeat = Math.min(gunHeat + 15, 100);
                 if (gunHeat === 100) {
                     gunCooldown = game.time.now + (3000 * GAME_SPEED_QF); // if weapons gets too hot, needs to wait 3 seconds
+                    hudTxtOverheatGun.visible = true;
+                    hudTxtOverheatGun.alpha = 0;
+                    
+                    var tweenA = game.add.tween(hudTxtOverheatGun).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+                    tweenA.onComplete.add(function(){
+                        var tweenB = game.add.tween(hudTxtOverheatGun).to({alpha: 0}, 2700, Phaser.Easing.Linear.None, true, 0, 0, false);
+                    });
                 }
             }
         }
