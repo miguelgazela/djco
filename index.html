@@ -248,9 +248,8 @@
                 game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
                 game.physics.arcade.overlap(deployedMinesGroup, aliensGroup, onMineHitsAlien, null, this);
 
-                // game.physics.overlap(alienBulletsGroup, meteors, onPlayerBulletsHitMeteors, null, this);
 
-                // game.physics.arcade.collide(meteorsGroup);
+                game.physics.arcade.collide(meteorsGroup);
             }
 
             if (gameState == GAMESTATE_DIED || gameState == GAMESTATE_GAMEOVER) {
