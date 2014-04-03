@@ -28,11 +28,13 @@ var IMAGE_PICKUP_MINE = "pickupMine";
 var IMAGE_POWERUP_SHIELD = "powerupShield";
 var IMAGE_BTN_PLAY = "btnPlay";
 var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
-var IMAGE_ALIEN_SHIP = "alien_ship";
+var IMAGE_ALIEN_SHIP = "new_alien";
 var IMAGE_YOU_CALLOUT = "youCallout";
 var IMAGE_DEBRIS1 = "debris1";
 var IMAGE_DEBRIS2 = "debris2";
 var IMAGE_DEBRIS3 = "debris3";
+var IMAGE_SHIP_MINI_FIELD = "player_mini_shield";
+var IMAGE_ALIEN_MINI_SHIELD = "alien_mini_shield";
 
 var IMAGE_DEBRIS = [IMAGE_DEBRIS1, IMAGE_DEBRIS2, IMAGE_DEBRIS3];
 
@@ -97,7 +99,7 @@ var PICKUP_DURATION_TIME = 8;
 var PLAYER_SHIP_WIDTH = 33;
 var PLAYER_SHIP_HEIGHT = 25;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
-var ALIEN_SHIP_WIDTH = 32;
+var ALIEN_SHIP_WIDTH = 30;
 var PLAYER_BULLET_HEIGHT = 36;
 var ALIEN_BULLET_HEIGHT = 9;
 

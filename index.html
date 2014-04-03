@@ -51,6 +51,8 @@
             loadImage(IMAGE_ALIEN_SHIP);
             loadImage(IMAGE_ASTRONAUT);
             loadImage(IMAGE_YOU_CALLOUT);
+            loadImage(IMAGE_SHIP_MINI_FIELD);
+            loadIMAGE(IMAGE_ALIEN_MINI_SHIELD);
             loadArrayImages(IMAGE_DEBRIS);
 
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
@@ -151,6 +153,7 @@
             dropMineButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
             aliensFireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
+
             //  Game Hud
             var style = { fontSize: '26px', fill: '#e9e9e9' };
             hudTxtScore = game.add.text(10, 10, "Score: " + score, style);
@@ -247,7 +250,7 @@
                 game.physics.arcade.overlap(aliensGroup, meteorsGroup, onMeteorHitsAlien, null, this);
                 game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
                 game.physics.arcade.overlap(deployedMinesGroup, aliensGroup, onMineHitsAlien, null, this);
-
+                game.physics.arcade.overlap(debrisGroup, player, onDebryHitsPlayer, null, this);
 
                 game.physics.arcade.collide(meteorsGroup);
             }
@@ -351,7 +354,7 @@
 
         if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
             aliensGroup.forEachAlive(function(child, index) {
-                if ( (child.body.x + aliensGroup.x) - 16 < 1) {
+                if ( (child.body.x - (ALIEN_SHIP_WIDTH / 2)) < 1) {
                     atTheEdge = true;
                 }
             });
@@ -359,7 +362,7 @@
             
         } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
             aliensGroup.forEachAlive(function(child, index) {
-                if ( (child.body.x + aliensGroup.x) + 16 > CANVAS_WIDTH - 1) {
+                if ( child.body.x > (CANVAS_WIDTH - (ALIEN_SHIP_WIDTH / 2) - 1)) {
                     atTheEdge = true;
                 }
             });
@@ -462,7 +465,8 @@
 
     function onMeteorHitsAlien (alien, meteor) {
         meteor.kill();
-        //alien.kill();
+        alien.kill();
+        createExplosion(alien.body.x, alien.body.y);
     }
 
     function onPickupOverlap (player, pickup) {
@@ -500,6 +504,11 @@
 
         showPowerupText(pickup.type);
         pickup.kill();
+    }
+
+    function onDebryHitsPlayer(player, debry) {
+        debry.kill();
+        damagePlayer(5);
     }
 
     // ------------------------------------------------------------------------------------------------
@@ -667,7 +676,7 @@
         hudTxtScore.visible = false;
         hudTxtHealth.visible = false;
         hudTxtMines.visible = false;
-        // minesGroup.setAll('visible', false);
+        minesGroup.setAll('visible', false);
 
         astronaut = game.add.sprite(player.body.x, player.body.y, IMAGE_ASTRONAUT);
         game.physics.enable(astronaut, Phaser.Physics.ARCADE);
@@ -772,14 +781,14 @@
 
     function createAliens () {
 
-        var NUM_COL = 5;
-        var DIST_BETWEEN = 140;
+        var NUM_COL = 8;
+        var DIST_BETWEEN = 110;
 
         var START_POS = (CANVAS_WIDTH - (NUM_COL * ALIEN_SHIP_WIDTH + (NUM_COL - 1) * (DIST_BETWEEN - ALIEN_SHIP_WIDTH))) / 2 + (ALIEN_SHIP_WIDTH / 2);
 
         for (var y = 0; y < 4; y++) {
             for (var x = 0; x < NUM_COL; x++) {
-                    var alien = aliensGroup.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + 16 + y * 50, IMAGE_ALIEN_SHIP);
+                    var alien = aliensGroup.create(START_POS + x * DIST_BETWEEN, (CANVAS_HEIGHT - 200) + (ALIEN_SHIP_WIDTH / 2) + y * 50, IMAGE_ALIEN_SHIP);
                 
                 alien.anchor.setTo(0.5, 0.5);
  
