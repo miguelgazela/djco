@@ -268,6 +268,7 @@
                 game.physics.arcade.overlap(deployedMinesGroup, aliensGroup, onMineHitsAlien, null, this);
                 game.physics.arcade.overlap(debrisGroup, player, onDebryHitsPlayer, null, this);
                 game.physics.arcade.overlap(debrisGroup, aliensGroup, onDebryHitsAlien, null, this);
+                game.physics.arcade.overlap(meteorsGroup, deployedMinesGroup, onMineHitsMeteor, null, this);
 
                 game.physics.arcade.collide(meteorsGroup);
             }
@@ -553,6 +554,12 @@
                 shield.kill();
             });
         }
+    }
+
+    function onMineHitsMeteor(meteor, mine) {
+        meteor.kill();
+        mine.kill();
+        createExplosion(mine.body.x, mine.body.y);
     }
 
     // ------------------------------------------------------------------------------------------------
