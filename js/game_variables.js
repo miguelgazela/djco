@@ -49,6 +49,7 @@ var minesGroup;
 var meteorsGroup;
 var alienBulletsGroup;
 var pickupGroup;
+var aliensShieldsGroup;
 var livingEnemies = [];
 
 // time related vars
@@ -85,7 +86,8 @@ var hudImgYouCallout;
 var graphics;
 var starfield;
 var backgroundScrollSpeed = 2;
-var speedInc = 0.0005;
+var gameSpeedQF = 1;
+var speedInc = 0.001;
 
 // constants
 var CANVAS_WIDTH = 960;
@@ -93,7 +95,6 @@ var CANVAS_HEIGHT = $(window).height();
 var METEOR_WIDTH = 44;
 var METEOR_HEIGHT = 42;
 
-var GAME_SPEED_QF = 1;
 var PICKUP_DROP_CHANGE = 0.2;
 var PICKUP_DESPAWN_RATE = 7;
 var PICKUP_DURATION_TIME = 8;
@@ -102,6 +103,7 @@ var PLAYER_SHIP_WIDTH = 33;
 var PLAYER_SHIP_HEIGHT = 25;
 var BOTTOM_LIMIT = CANVAS_HEIGHT - 300;
 var ALIEN_SHIP_WIDTH = 30;
+var ALIEN_SHIP_HEIGHT = 16;
 var PLAYER_BULLET_HEIGHT = 36;
 var ALIEN_BULLET_HEIGHT = 9;
 

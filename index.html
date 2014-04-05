@@ -152,6 +152,13 @@
             explosionsGroup.setAll('anchor.y', 0.5);
             explosionsGroup.forEach(function(explosion) { explosion.animations.add('explosion'); }, this);
 
+            // aliens shields
+            aliensShieldsGroup = game.add.group();
+            aliensShieldsGroup.createMultiple(10, IMAGE_ALIEN_MINI_SHIELD);
+            aliensShieldsGroup.setAll('anchor.x', 0.5);
+            aliensShieldsGroup.setAll('anchor.y', 0.5);
+            aliensShieldsGroup.setAll('visible', false);
+
             //  Controls to play the game
             cursors = game.input.keyboard.createCursorKeys();
             dropMineButton = game.input.keyboard.addKey(Phaser.Keyboard.SHIFT);
@@ -213,6 +220,8 @@
             score = 0;
             firedLasers = 0;
             meteorHits = 0;
+            numberMines = 3;
+            gameSpeedQF = 1;
 
             if(playedOnce) {
                 onBtnPlay();
@@ -224,13 +233,13 @@
             if (gameState == GAMESTATE_PLAYING) {
 
                 //  Scroll the background
-                starfield.tilePosition.y += backgroundScrollSpeed * GAME_SPEED_QF;
-                backgroundScrollSpeed += speedInc;
+                starfield.tilePosition.y += backgroundScrollSpeed * gameSpeedQF;
+                gameSpeedQF += speedInc;
 
                 processInput();
 
                 // decrease gun heat
-                gunHeat = Math.max(6, gunHeat - (0.4 * GAME_SPEED_QF));
+                gunHeat = Math.max(6, gunHeat - 0.4);
 
                 if (game.time.now > meteorTimer) {
                     sendMeteor();
@@ -258,6 +267,7 @@
                 game.physics.arcade.overlap(pickupGroup, player, onPickupOverlap, null, this);
                 game.physics.arcade.overlap(deployedMinesGroup, aliensGroup, onMineHitsAlien, null, this);
                 game.physics.arcade.overlap(debrisGroup, player, onDebryHitsPlayer, null, this);
+                game.physics.arcade.overlap(debrisGroup, aliensGroup, onDebryHitsAlien, null, this);
 
                 game.physics.arcade.collide(meteorsGroup);
             }
@@ -334,8 +344,8 @@
             player.angle = 0;
         }
 
-        player.body.velocity.x *= GAME_SPEED_QF;
-        player.body.velocity.y *= GAME_SPEED_QF;
+        // player.body.velocity.x *= gameSpeedQF;
+        // player.body.velocity.y *= gameSpeedQF;
 
         //  Check if hero has moved to the other side
         if ((player.body.x + (PLAYER_SHIP_WIDTH / 2) - 2) < 0) {
@@ -361,19 +371,19 @@
 
         if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
             aliensGroup.forEachAlive(function(child, index) {
-                if ( (child.body.x - (ALIEN_SHIP_WIDTH / 2)) < 1) {
+                if (child.body.x  < 1) {
                     atTheEdge = true;
                 }
             });
-            velocity = -200 * GAME_SPEED_QF;
+            velocity = -200;
             
         } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
             aliensGroup.forEachAlive(function(child, index) {
-                if ( child.body.x > (CANVAS_WIDTH - (ALIEN_SHIP_WIDTH / 2) - 1)) {
+                if ( child.body.x > (CANVAS_WIDTH - ALIEN_SHIP_WIDTH - 1)) {
                     atTheEdge = true;
                 }
             });
-            velocity = 200 * GAME_SPEED_QF;
+            velocity = 200;
         }
 
         if(!atTheEdge) {
@@ -460,14 +470,14 @@
         createExplosion(player.body.x, player.body.y);
 
         // decrease player's health
-        damagePlayer(20);
+        damagePlayer(50);
     }
 
     function onMeteorHitsPlayer (player, meteor) {
 
         meteor.kill();
         createExplosion(player.body.x, player.body.y);
-        damagePlayer(10);
+        damagePlayer(20);
     }
 
     function onMeteorHitsAlien (alien, meteor) {
@@ -514,6 +524,7 @@
     }
 
     function onDebryHitsPlayer(player, debry) {
+       
         debry.kill();
         damagePlayer(5);
 
@@ -521,8 +532,27 @@
         player_mini_shield.alpha = 1;
         player_mini_shield.visible = true;
 
-        var tweenA = game.add.tween(player_mini_shield).to({alpha: 0}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+        var tween = game.add.tween(player_mini_shield).to({alpha: 0}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
 
+    }
+
+    function onDebryHitsAlien(debry, alien) {
+
+        debry.kill();
+
+        shield = aliensShieldsGroup.getFirstExists(false);
+
+        if(shield) {
+            shield.x = alien.body.x + ALIEN_SHIP_WIDTH / 2;
+            shield.y = alien.body.y + ALIEN_SHIP_HEIGHT / 2;
+            shield.alpha = 1;
+            shield.visible = true;
+
+            var tween = game.add.tween(shield).to({alpha: 0}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
+            tween.onComplete.add(function(){
+                shield.kill();
+            });
+        }
     }
 
     // ------------------------------------------------------------------------------------------------
@@ -691,6 +721,7 @@
         hudTxtHealth.visible = false;
         hudTxtMines.visible = false;
         minesGroup.setAll('visible', false);
+        aliensGroup.setAll('body.velocity.x', 0);
 
         astronaut = game.add.sprite(player.body.x, player.body.y, IMAGE_ASTRONAUT);
         game.physics.enable(astronaut, Phaser.Physics.ARCADE);
@@ -705,6 +736,8 @@
         game.time.events.add(Phaser.Timer.SECOND * 3, gameOver, this);
 
         gameState = GAMESTATE_DIED;
+        score = 0;
+        hudTxtScore.text = "Score: " + score;
         playedOnce = true;
         graphics.clear();
     }
@@ -713,7 +746,7 @@
         hudBtnPlayAgain.alpha = 0;
         hudBtnPlayAgain.visible = true;
 
-        hudTxtGameOver.text = "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.\nYou fired "+firedLasers+ " lasers.\nYou hit "+meteorHits+" meteors.\nLaser accuracy of "+laserAccuracy()+"%.";
+        hudTxtGameOver.text = "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.\nYou fired "+firedLasers+ " lasers.\nYou hit "+meteorHits+" meteors.\nLaser accuracy of "+laserAccuracy()+"%.\nScore: "+score+".";
         hudTxtGameOver.visible = true;
         hudTxtGameOver.alpha = 0;
 
@@ -773,9 +806,7 @@
             meteor.reset(randomX, -21);
             meteor.body.velocity.y = game.rnd.integerInRange(50, 200);
             meteor.body.velocity.x = game.rnd.integerInRange(-50, 50);
-            // meteor.body.angularVelocity = 10;
-            // meteor.body.rotation = game.rnd.integerInRange(1, 20);
-            meteorTimer = game.time.now + (400 / GAME_SPEED_QF);
+            meteorTimer = game.time.now + (400 / gameSpeedQF);
         }
 
     }
@@ -822,15 +853,15 @@
 
                 //  And fire it
                 bullet.reset(player.x, player.y + 8);
-                bullet.body.velocity.y = -400 * GAME_SPEED_QF;
-                bulletTime = game.time.now + (200 / GAME_SPEED_QF);
+                bullet.body.velocity.y = -400;
+                bulletTime = game.time.now + 200;
                 // s_laser.play();
                 firedLasers += 1;
 
                 // add heat to gun
                 gunHeat = Math.min(gunHeat + 15, 100);
                 if (gunHeat === 100) {
-                    gunCooldown = game.time.now + (3000 * GAME_SPEED_QF); // if weapons gets too hot, needs to wait 3 seconds
+                    gunCooldown = game.time.now + 3000; // if weapons gets too hot, needs to wait 3 seconds
                     hudTxtOverheatGun.visible = true;
                     hudTxtOverheatGun.alpha = 0;
                     
@@ -855,7 +886,7 @@
                 minesGroup.remove(minesGroup.getTop());
                 mine.reset(player.x, player.y + 12);
                 mine.body.velocity.y = 100;
-                mineTime = game.time.now + (400 / GAME_SPEED_QF);
+                mineTime = game.time.now + 400;
             }
         }
 
@@ -871,7 +902,10 @@
     }
 
     function laserAccuracy() {
-        return Phaser.Math.roundTo((meteorHits/firedLasers)*100, -2);
+        if(firedLasers) {
+            return Phaser.Math.roundTo((meteorHits/firedLasers)*100, -2);
+        }
+        return 0;
     }
 
     function createExplosion(x, y) {
