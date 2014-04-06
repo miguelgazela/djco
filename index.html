@@ -315,8 +315,9 @@
             player.angle = -15;
 
             if (cursors.up.isDown) {
-                player.body.velocity.y = -200;
-
+                if(player.body.y - PLAYER_SHIP_HEIGHT / 2 > 0) {
+                    player.body.velocity.y = -200;
+                }
             } else if (cursors.down.isDown) {
                 if (player.y < BOTTOM_LIMIT) {
                     player.body.velocity.y = 200;
@@ -327,15 +328,19 @@
             player.angle = 15;
 
             if (cursors.up.isDown) {
-                player.body.velocity.y = -200;
+                if(player.body.y - PLAYER_SHIP_HEIGHT / 2 > 0) {
+                    player.body.velocity.y = -200;
+                }
             } else if (cursors.down.isDown) {
                 if (player.y < BOTTOM_LIMIT) {
                     player.body.velocity.y = 200;
                 }
             }
         } else if (cursors.up.isDown) {
-            player.body.velocity.y = -200;
-            player.angle = 0;
+            if(player.body.y - PLAYER_SHIP_HEIGHT / 2 > 0) {
+                player.body.velocity.y = -200;
+                player.angle = 0;
+            }
         } else if (cursors.down.isDown) {
             player.angle = 0;
             if (player.y < BOTTOM_LIMIT) {
@@ -743,8 +748,6 @@
         game.time.events.add(Phaser.Timer.SECOND * 3, gameOver, this);
 
         gameState = GAMESTATE_DIED;
-        score = 0;
-        hudTxtScore.text = "Score: " + score;
         playedOnce = true;
         graphics.clear();
     }
@@ -765,6 +768,8 @@
             });
         });
 
+        score = 0;
+        hudTxtScore.text = "Score: " + score;
         minesGroup.removeAll();
         deployedMinesGroup.removeAll();
         gameState = GAMESTATE_GAMEOVER;
