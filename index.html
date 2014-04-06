@@ -48,6 +48,7 @@
             loadImage(IMAGE_PICKUP_HEALTH);
             loadImage(IMAGE_PICKUP_SHIELD);
             loadImage(IMAGE_PICKUP_MINE);
+            loadImage(IMAGE_PICKUP_SLOWDOWN);
             loadImage(IMAGE_POWERUP_SHIELD);
             loadImage(IMAGE_ALIEN_SHIP);
             loadImage(IMAGE_ASTRONAUT);
@@ -216,6 +217,11 @@
             hudTxtPowerupMine.y = game.world.height / 2 - hudTxtPowerupMine.height / 2;
             hudTxtPowerupMine.visible = false;
 
+            hudTxtPowerupSlowdown = game.add.text(0, 100, "PICKED UP SLOWDOWN", style);
+            hudTxtPowerupSlowdown.x = game.world.width / 2 - hudTxtPowerupSlowdown.width / 2;
+            hudTxtPowerupSlowdown.y = game.world.height / 2 - hudTxtPowerupSlowdown.height / 2;
+            hudTxtPowerupSlowdown.visible = false;
+
             // sounds
             s_laser = game.add.audio('s_laser');
             s_explosion = game.add.audio('s_explosion');
@@ -355,8 +361,10 @@
             player.angle = 0;
         }
 
-        // player.body.velocity.x *= gameSpeedQF;
-        // player.body.velocity.y *= gameSpeedQF;
+        if(isSlowedDown) {
+            player.body.velocity.x *= 0.5;
+            player.body.velocity.y *= 0.5;
+        }
 
         //  Check if hero has moved to the other side
         if ((player.body.x + (PLAYER_SHIP_WIDTH / 2) - 2) < 0) {
@@ -527,6 +535,9 @@
                 numberMines = Phaser.Math.min(3, numberMines + 1);
                 
             break;
+            case IMAGE_PICKUP_SLOWDOWN:
+                isSlowedDown = true;
+                game.time.events.add(Phaser.Timer.SECOND * PICKUP_DURATION_TIME, function() {isSlowedDown = false;}, this);
             default: //unexpected stuff happened
         }
 
@@ -628,7 +639,7 @@
     function showPowerupText(powerupType) {
 
         var powerupText;
-        var powerupTexts = [hudTxtPowerupShield, hudTxtPowerupRevive, hudTxtPowerupMine];
+        var powerupTexts = [hudTxtPowerupShield, hudTxtPowerupRevive, hudTxtPowerupMine, hudTxtPowerupSlowdown];
 
         switch (powerupType) {
             case IMAGE_PICKUP_SHIELD:
@@ -639,6 +650,9 @@
             break;
             case IMAGE_PICKUP_MINE:
                 powerupText = hudTxtPowerupMine;
+            break;
+            case IMAGE_PICKUP_SLOWDOWN:
+                powerupText = hudTxtPowerupSlowdown;
             break;
             default:
         }
@@ -690,6 +704,8 @@
                 pickupType = IMAGE_PICKUP_MINE;
             } else if (random <= 0.75) {
                 pickupType = IMAGE_PICKUP_SHIELD;
+            } else if (random <= 0.90) {
+                pickupType = IMAGE_PICKUP_SLOWDOWN;
             } else {
                 pickupType = IMAGE_PICKUP_HEALTH;
             }

@@ -28,6 +28,7 @@ var IMAGE_SMALL_METEOR = "small_meteor";
 var IMAGE_PICKUP_HEALTH = "asousa_cut";
 var IMAGE_PICKUP_SHIELD = "vidal_cut";
 var IMAGE_PICKUP_MINE = "eugenio_cut";
+var IMAGE_PICKUP_SLOWDOWN = "souto_cut";
 var IMAGE_POWERUP_SHIELD = "powerupShield";
 var IMAGE_BTN_PLAY = "btnPlay_alt";
 var IMAGE_BTN_HELP = "btnHelp";
@@ -60,6 +61,7 @@ var mineTime = 0;
 var firingTimer = 0;
 var meteorTimer = 0;
 var gunCooldown = 0;
+var isSlowedDown = false;
 var powerupShieldTimer;
 
 // control keys
@@ -78,6 +80,7 @@ var hudTxtMines;
 var hudTxtPowerupShield;
 var hudTxtPowerupRevive;
 var hudTxtPowerupMine;
+var hudTxtPowerupSlowdown;
 var hudTxtOverheatGun;
 var hudImgLogo;
 var hudBtnPlay;
