@@ -61,6 +61,7 @@
             game.load.spritesheet(IMAGE_BTN_PLAY, 'assets/' + IMAGE_BTN_PLAY + '.png', 150, 38);
             game.load.spritesheet(IMAGE_BTN_PLAY_AGAIN, 'assets/' + IMAGE_BTN_PLAY_AGAIN + '.png', 170, 76);
             game.load.spritesheet(IMAGE_BTN_HELP, 'assets/' + IMAGE_BTN_HELP + '.png', 150, 38);
+            game.load.spritesheet(IMAGE_BTN_BACK, 'assets/' + IMAGE_BTN_BACK + '.png', 150, 38);
 
             game.load.audio('s_laser', 'assets/audio/laser.wav');
             game.load.audio('s_explosion', 'assets/audio/explode.wav');
@@ -82,6 +83,11 @@
 
             hudBtnHelp = game.add.button(0, 458, IMAGE_BTN_HELP, onBtnHelp, this, 1, 0, 1);
             hudBtnHelp.x = game.world.width / 2 - hudBtnHelp.width / 2;
+
+            hudBtnBack = game.add.button(0, 558, IMAGE_BTN_BACK, onBtnBack, this, 1, 0, 1);
+            hudBtnBack.x = game.world.width / 2 - hudBtnBack.width / 2;
+            hudBtnBack.visible = false;
+            hudBtnBack.active = false;
 
             hudBtnPlayAgain = game.add.button(0, 300, IMAGE_BTN_PLAY_AGAIN, onBtnPlayAgain, this, 1, 0, 1);
             hudBtnPlayAgain.x = game.world.width / 2 - hudBtnPlayAgain.width / 2;
@@ -185,6 +191,10 @@
             hudTxtGameOver = game.add.text(0, 90, "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.", {fontSize: "26px", fill: "#e9e9e9", align: "center"});
             hudTxtGameOver.x = game.world.width / 2 - hudTxtGameOver.width / 2;
             hudTxtGameOver.visible = false;
+
+            hudTxtHelp = game.add.text(0, 140, "HELP\n\n", style);
+            hudTxtHelp.x = game.world.width / 2 - hudTxtHelp.width / 2;
+            hudTxtHelp.visible = false;
 
             hudTxtOverheatGun = game.add.text(0, 90, "LASER HAS OVERHEATED", style);
             hudTxtOverheatGun.x = game.world.width / 2 - hudTxtOverheatGun.width / 2;
@@ -752,6 +762,24 @@
 
     function onBtnHelp() {
 
+        hudBtnHelp.visible = false;
+        hudBtnHelp.active = false;
+        hudBtnPlay.visible = false;
+        hudBtnPlay.active = false;
+        hudBtnBack.active = true;
+        hudBtnBack.visible = true;
+        hudTxtHelp.visible = true;
+
+    }
+
+    function onBtnBack() {
+        hudBtnHelp.visible = true;
+        hudBtnHelp.active = true;
+        hudBtnPlay.visible = true;
+        hudBtnPlay.active = true;
+        hudBtnBack.active = false;
+        hudBtnBack.visible = false;
+        hudTxtHelp.visible = false;
     }
 
     function playerOneDied() {

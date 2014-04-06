@@ -33,6 +33,7 @@ var IMAGE_POWERUP_SHIELD = "powerupShield";
 var IMAGE_BTN_PLAY = "btnPlay_alt";
 var IMAGE_BTN_HELP = "btnHelp";
 var IMAGE_BTN_PLAY_AGAIN = "btnPlayAgain";
+var IMAGE_BTN_BACK = "btnBack";
 var IMAGE_ALIEN_SHIP = "new_alien";
 var IMAGE_YOU_CALLOUT = "youCallout";
 var IMAGE_DEBRIS1 = "debris1";
@@ -85,8 +86,10 @@ var hudTxtOverheatGun;
 var hudImgLogo;
 var hudBtnPlay;
 var hudBtnHelp;
+var hudBtnBack;
 var hudBtnPlayAgain;
 var hudTxtGameOver;
+var hudTxtHelp;
 var hudImgYouCallout;
 
 var graphics;
