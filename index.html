@@ -31,6 +31,7 @@
     <script type="text/javascript">
 
     var game = new Phaser.Game(CANVAS_WIDTH, CANVAS_HEIGHT, Phaser.CANVAS, 'FEUP Invaders');
+    loadHighScores();
 
     var gameState = {
 
@@ -760,6 +761,9 @@
         hudTxtGameOver.visible = true;
         hudTxtGameOver.alpha = 0;
 
+        // add score to local storage saved high scores
+        saveHighScore(score);
+
         var tweenA = game.add.tween(hudTxtGameOver).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
         tweenA.onComplete.add(function() {
             var tweenB = game.add.tween(hudBtnPlayAgain).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
@@ -953,6 +957,41 @@
         group.setAll('outOfBoundsKill', true);
         group.setAll('anchor.x', (anchorX || 0.5));
         group.setAll('anchor.y', (anchorY || 0.5));
+    }
+
+    function loadHighScores() {
+        if(Modernizr.localstorage) {
+            if(localStorage['fpapsi.hasHighScores'] === "true") {
+                highScores = [];
+                for(var i = 0; i < parseInt(localStorage['fpapsi.numberHighScores']); i++) {
+                    highScores.push(parseInt(localStorage['fpapsi.highScore.'+i]));
+                }
+            }
+            console.log(highScores);
+        } else {
+            highScores = null;
+        }
+    }
+
+    function saveHighScore(score) {
+        if(Modernizr.localstorage) {
+            localStorage['fpapsi.hasHighScores'] = true;
+
+            if(highScores) {
+                highScores.push(score);
+                highScores.sort(function(a, b){
+                    return b - a;
+                });
+            } else {
+                highScores = [];
+                highScores.push(score);
+            }
+
+            localStorage['fpapsi.numberHighScores'] = Math.min(highScores.length, 3);
+            for(var i = 0; i < Math.min(highScores.length, 3); i++) {
+                localStorage['fpapsi.highScore.'+i] = highScores[i];
+            }
+        }
     }
 
     </script>

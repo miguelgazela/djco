@@ -9,6 +9,7 @@ var meteorHits;
 var astronaut;
 var player_mini_shield;
 var aliens_mini_shield;
+var highScores = null;
 
 // POWERUPS
 var powerupShield;
