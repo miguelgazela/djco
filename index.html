@@ -84,7 +84,7 @@
             hudBtnHelp = game.add.button(0, 458, IMAGE_BTN_HELP, onBtnHelp, this, 1, 0, 1);
             hudBtnHelp.x = game.world.width / 2 - hudBtnHelp.width / 2;
 
-            hudBtnBack = game.add.button(0, 558, IMAGE_BTN_BACK, onBtnBack, this, 1, 0, 1);
+            hudBtnBack = game.add.button(0, 500, IMAGE_BTN_BACK, onBtnBack, this, 1, 0, 1);
             hudBtnBack.x = game.world.width / 2 - hudBtnBack.width / 2;
             hudBtnBack.visible = false;
             hudBtnBack.active = false;
@@ -178,7 +178,8 @@
 
 
             //  Game Hud
-            var style = { fontSize: '26px', fill: '#e9e9e9' };
+            var style = { font: '20px Arial', fill: '#e9e9e9' };
+            var styleHelp = { font: '20px Arial', fill: '#e9e9e9', align: "center", wordWrap: "true", wordWrapWidth: "600" };
             hudTxtScore = game.add.text(10, 10, "Score: " + score, style);
             hudTxtScore.visible = false;
 
@@ -188,11 +189,11 @@
             hudTxtMines = game.add.text(10, 36, "Mines: ", {fontSize: '26px', fill: '#e9e9e9'});
             hudTxtMines.visible = false;
 
-            hudTxtGameOver = game.add.text(0, 90, "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.", {fontSize: "26px", fill: "#e9e9e9", align: "center"});
+            hudTxtGameOver = game.add.text(0, 90, "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.", {font: "20px arial", fill: "#e9e9e9", align: "center"});
             hudTxtGameOver.x = game.world.width / 2 - hudTxtGameOver.width / 2;
             hudTxtGameOver.visible = false;
 
-            hudTxtHelp = game.add.text(0, 140, "HELP\n\n", style);
+            hudTxtHelp = game.add.text(0, 140, "\nSurvive.\n\nDestroy asteroids and the chasing invaders. Move using the arrow keys; shoot using the mouse button and drop mines using shift.\nThe gun overheats if used for too long. You have a limited amount of mines!\n\nA squad of invaders will try to destroy you. They can be controlled using WASD keys to move and spacebar to fire.\n\nThroughout the game, familiar faces will lend you a hand. Either by allowing you to restore health, boost a shield, slow down or provide you with additional mines.\n", styleHelp);
             hudTxtHelp.x = game.world.width / 2 - hudTxtHelp.width / 2;
             hudTxtHelp.visible = false;
 
