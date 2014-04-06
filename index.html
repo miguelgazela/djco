@@ -57,8 +57,9 @@
             loadArrayImages(IMAGE_DEBRIS);
 
             game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
-            game.load.spritesheet(IMAGE_BTN_PLAY, 'assets/' + IMAGE_BTN_PLAY + '.png', 170, 76);
+            game.load.spritesheet(IMAGE_BTN_PLAY, 'assets/' + IMAGE_BTN_PLAY + '.png', 150, 38);
             game.load.spritesheet(IMAGE_BTN_PLAY_AGAIN, 'assets/' + IMAGE_BTN_PLAY_AGAIN + '.png', 170, 76);
+            game.load.spritesheet(IMAGE_BTN_HELP, 'assets/' + IMAGE_BTN_HELP + '.png', 150, 38);
 
             game.load.audio('s_laser', 'assets/audio/laser.wav');
             game.load.audio('s_explosion', 'assets/audio/explode.wav');
@@ -75,12 +76,15 @@
             // Menu HUD
             hudImgLogo = game.add.sprite(0, 40, IMAGE_LOGO);
             hudImgLogo.x = game.world.centerX - hudImgLogo.width / 2;
-            hudBtnPlay = game.add.button(0, 300, IMAGE_BTN_PLAY, onBtnPlay, this, 1, 0, 1);
+            hudBtnPlay = game.add.button(0, 400, IMAGE_BTN_PLAY, onBtnPlay, this, 1, 0, 1);
             hudBtnPlay.x = game.world.width / 2 - hudBtnPlay.width / 2;
+
+            hudBtnHelp = game.add.button(0, 458, IMAGE_BTN_HELP, onBtnHelp, this, 1, 0, 1);
+            hudBtnHelp.x = game.world.width / 2 - hudBtnHelp.width / 2;
 
             hudBtnPlayAgain = game.add.button(0, 300, IMAGE_BTN_PLAY_AGAIN, onBtnPlayAgain, this, 1, 0, 1);
             hudBtnPlayAgain.x = game.world.width / 2 - hudBtnPlayAgain.width / 2;
-            hudBtnPlayAgain.y = game.world.height / 2 - hudBtnPlayAgain.height / 2;
+            hudBtnPlayAgain.y = CANVAS_HEIGHT - 300;
             hudBtnPlayAgain.visible = false;
             hudBtnPlayAgain.active = false;
 
@@ -710,6 +714,8 @@
 
         hudBtnPlay.visible = false;
         hudBtnPlay.active = false;
+        hudBtnHelp.visible = false;
+        hudBtnHelp.active = false;
         hudTxtScore.visible = true;
         hudTxtHealth.visible = true;
         hudTxtMines.visible = true;
@@ -725,6 +731,10 @@
         }
 
         gameState = GAMESTATE_PLAYING;
+
+    }
+
+    function onBtnHelp() {
 
     }
 
@@ -757,12 +767,20 @@
         hudBtnPlayAgain.alpha = 0;
         hudBtnPlayAgain.visible = true;
 
-        hudTxtGameOver.text = "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.\nYou fired "+firedLasers+ " lasers.\nYou hit "+meteorHits+" meteors.\nLaser accuracy of "+laserAccuracy()+"%.\nScore: "+score+".";
-        hudTxtGameOver.visible = true;
-        hudTxtGameOver.alpha = 0;
-
         // add score to local storage saved high scores
         saveHighScore(score);
+
+        hudTxtGameOver.text = "GAME OVER\n\nYou survived for "+ roundTimeAlive() + " seconds.\nYou fired "+firedLasers+ " lasers.\nYou hit "+meteorHits+" meteors.\nLaser accuracy of "+laserAccuracy()+"%.\nScore: "+score+".";
+
+        if(highScores) {
+            hudTxtGameOver.text += "\n\nHigh Scores:";
+            for(var i = 0; i < Math.min(highScores.length, 3); i++) {
+                hudTxtGameOver.text += "\n" + highScores[i];
+            }
+        }
+        
+        hudTxtGameOver.visible = true;
+        hudTxtGameOver.alpha = 0;
 
         var tweenA = game.add.tween(hudTxtGameOver).to({alpha: 1}, 300, Phaser.Easing.Linear.None, true, 0, 0, false);
         tweenA.onComplete.add(function() {
@@ -967,7 +985,6 @@
                     highScores.push(parseInt(localStorage['fpapsi.highScore.'+i]));
                 }
             }
-            console.log(highScores);
         } else {
             highScores = null;
         }
