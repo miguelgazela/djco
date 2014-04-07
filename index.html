@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>Space Invaders</title>
+        <title>FPAPSI</title>
 
         <style>
             html,
@@ -934,7 +934,7 @@
                 bullet.reset(player.x, player.y + 8);
                 bullet.body.velocity.y = -400;
                 bulletTime = game.time.now + 200;
-                // s_laser.play();
+                s_laser.play();
                 firedLasers += 1;
 
                 // add heat to gun
@@ -989,7 +989,7 @@
 
     function createExplosion(x, y) {
 
-        // s_explosion.play();
+        s_explosion.play();
         var explosion = explosionsGroup.getFirstDead();
         explosion.reset(x, y);
         explosion.play('explosion', 30, false, true);
